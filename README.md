@@ -52,7 +52,7 @@ A lightweight, conversational AI that seniors can talk to daily, tracking emotio
 
 ## 📆 Project Checkpoints
 
-### ✅ Checkpoint 1 (Week 1): Foundation & Scoping
+### ✅ Checkpoint 1: Foundation & Scoping
 **Goal**: Establish project plan & dev environment.  
 **Milestones**:
 - Finalize scope, value proposition, and `README.md`.  
@@ -61,14 +61,14 @@ A lightweight, conversational AI that seniors can talk to daily, tracking emotio
 - Set up dev environment (file structure, Docker for Ollama, dependencies).  
 
 **Team Roles**:
-- **Backend & DB**: FastAPI + SQLite setup.  
+- **Backend & DB**:  Backend API and Database setup 
 - **AI & Agent**: Ollama + LangChain agent framework.  
 - **Frontend & UI**: React placeholder.  
 - **Research & Docs**: Research + proposal writing.  
 
 ---
 
-### ✅ Checkpoint 2 (Week 2): Core Functionality & Validation
+### ✅ Checkpoint 2: Core Functionality & Validation
 **Goal**: Build basic end-to-end voice loop + validate assumptions.  
 **Milestones**:
 - Implement local voice loop (STT: faster-whisper, TTS: Piper, LLM: Ollama).  
@@ -84,7 +84,7 @@ A lightweight, conversational AI that seniors can talk to daily, tracking emotio
 
 ---
 
-### ✅ Checkpoint 3 (Week 3): Smart Features & Caregiver Integration
+### ✅ Checkpoint 3: Smart Features & Caregiver Integration
 **Goal**: Implement smart features + caregiver dashboard.  
 **Milestones**:
 - Proactive reminder scheduler + missed dose alerts.  
@@ -100,7 +100,7 @@ A lightweight, conversational AI that seniors can talk to daily, tracking emotio
 
 ---
 
-### ✅ Checkpoint 4 (Week 4): Final Product & Polish
+### ✅ Checkpoint 4: Final Product & Polish
 **Goal**: Deliver polished, documented final product.  
 **Milestones**:
 - Refine features with feedback.  
