@@ -52,7 +52,8 @@ The authors conducted a systematic literature review of **72 papers (pre-2024)**
      - Transparent communication about data use  
 
 ---
-
+### Concrete Idea for our Project  
+- Build a **robust memory cue system**: beyond remembering names, the CA could recall personal history (e.g., “favorite beach vacation,” “first car”) and weave these into conversations to create a more **personalized, human-like experience**. 
 ---
 
 ## Literature review: AI Companions Reduce Loneliness  
@@ -93,6 +94,6 @@ This paper investigates whether conversational AI companions can **alleviate lon
    - Effectiveness tied to **caring, empathetic designs**.  
    - All studies conducted in the **US** → cultural generalizability (e.g., Japan, EU) remains uncertain.  
 
-### Concrete Idea for our Project  
-- Build a **robust memory cue system**: beyond remembering names, the CA could recall personal history (e.g., “favorite beach vacation,” “first car”) and weave these into conversations to create a more **personalized, human-like experience**. 
+### Concrete Idea for our Project
+- This paper provides a clear metric for success: we can use sentiment analysis on conversation transcripts to track a "loneliness score" over time and evaluate our project's impact on user well-being.
 ---
