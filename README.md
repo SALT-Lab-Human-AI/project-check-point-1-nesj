@@ -58,12 +58,12 @@ A lightweight, conversational AI that seniors can talk to daily, tracking emotio
 - Finalize scope, value proposition, and `README.md`.  
 - Literature review + reflections.  
 - Write `PROPOSAL.md`.  
-- Set up dev environment (file structure, Docker for Ollama, dependencies).  
+- Set up dev environment (file structure, Ollama, dependencies).  
 
 **Team Roles**:
 - **Backend & DB**:  Backend API and Database setup 
 - **AI & Agent**: Ollama + LangChain agent framework.  
-- **Frontend & UI**: React placeholder.  
+- **Frontend & UI**: Design Frontent.  
 - **Research & Docs**: Research + proposal writing.  
 
 ---
