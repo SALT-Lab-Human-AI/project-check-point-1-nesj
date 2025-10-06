@@ -14,6 +14,8 @@ class User(SQLModel, table=True):
     phone: Optional[str] = None
     preferences: Optional[str] = None  # JSON string for preferences
     emergency_contact: Optional[str] = None
+    user_type: str = Field(default="patient")  # patient, caregiver, admin
+    password_hash: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.now)
 
 class Medication(SQLModel, table=True):
@@ -68,6 +70,25 @@ class CaregiverAlert(SQLModel, table=True):
     description: str
     resolved: bool = Field(default=False)
     resolved_at: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=datetime.now)
+
+class CaregiverPatientAssignment(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    caregiver_id: int = Field(foreign_key="user.id")
+    patient_id: int = Field(foreign_key="user.id")
+    relationship: Optional[str] = None  # family, professional, friend
+    notification_preferences: Optional[str] = None  # JSON string
+    created_at: datetime = Field(default_factory=datetime.now)
+
+class PersonalEvent(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id")
+    event_type: str  # birthday, appointment, family_event, hobby, achievement
+    title: str
+    description: Optional[str] = None
+    event_date: Optional[datetime] = None
+    recurring: bool = Field(default=False)
+    importance: str = Field(default="medium")  # low, medium, high
     created_at: datetime = Field(default_factory=datetime.now)
 
 def create_tables():

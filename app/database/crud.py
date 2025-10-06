@@ -4,22 +4,30 @@ from typing import List, Optional
 import json
 from app.database.models import (
     get_session, User, Medication, Conversation, Reminder, 
-    MedicationLog, CaregiverAlert
+    MedicationLog, CaregiverAlert, CaregiverPatientAssignment, PersonalEvent
 )
 
 class UserCRUD:
     @staticmethod
     def create_user(name: str, email: str = None, phone: str = None, 
-                   preferences: dict = None, emergency_contact: str = None) -> User:
+                   preferences: dict = None, emergency_contact: str = None,
+                   user_type: str = "patient", password: str = None) -> User:
         """Create a new user"""
         with get_session() as session:
             preferences_json = json.dumps(preferences) if preferences else None
+            password_hash = None
+            if password:
+                import hashlib
+                password_hash = hashlib.sha256(password.encode()).hexdigest()
+            
             user = User(
                 name=name,
                 email=email,
                 phone=phone,
                 preferences=preferences_json,
-                emergency_contact=emergency_contact
+                emergency_contact=emergency_contact,
+                user_type=user_type,
+                password_hash=password_hash
             )
             session.add(user)
             session.commit()
@@ -247,3 +255,121 @@ class CaregiverAlertCRUD:
                 session.commit()
                 session.refresh(alert)
             return alert
+
+class CaregiverPatientCRUD:
+    @staticmethod
+    def assign_patient(caregiver_id: int, patient_id: int, relationship: str = None, 
+                      notification_preferences: dict = None) -> CaregiverPatientAssignment:
+        """Assign a patient to a caregiver"""
+        with get_session() as session:
+            assignment = CaregiverPatientAssignment(
+                caregiver_id=caregiver_id,
+                patient_id=patient_id,
+                relationship=relationship,
+                notification_preferences=json.dumps(notification_preferences) if notification_preferences else None
+            )
+            session.add(assignment)
+            session.commit()
+            session.refresh(assignment)
+            return assignment
+    
+    @staticmethod
+    def get_caregiver_patients(caregiver_id: int) -> List[User]:
+        """Get all patients assigned to a caregiver"""
+        with get_session() as session:
+            query = select(CaregiverPatientAssignment).where(
+                CaregiverPatientAssignment.caregiver_id == caregiver_id
+            )
+            assignments = session.exec(query).all()
+            
+            patients = []
+            for assignment in assignments:
+                patient = session.get(User, assignment.patient_id)
+                if patient:
+                    patients.append(patient)
+            return patients
+    
+    @staticmethod
+    def get_patient_caregivers(patient_id: int) -> List[User]:
+        """Get all caregivers assigned to a patient"""
+        with get_session() as session:
+            query = select(CaregiverPatientAssignment).where(
+                CaregiverPatientAssignment.patient_id == patient_id
+            )
+            assignments = session.exec(query).all()
+            
+            caregivers = []
+            for assignment in assignments:
+                caregiver = session.get(User, assignment.caregiver_id)
+                if caregiver:
+                    caregivers.append(caregiver)
+            return caregivers
+    
+    @staticmethod
+    def remove_assignment(caregiver_id: int, patient_id: int) -> bool:
+        """Remove patient assignment from caregiver"""
+        with get_session() as session:
+            query = select(CaregiverPatientAssignment).where(
+                CaregiverPatientAssignment.caregiver_id == caregiver_id,
+                CaregiverPatientAssignment.patient_id == patient_id
+            )
+            assignment = session.exec(query).first()
+            if assignment:
+                session.delete(assignment)
+                session.commit()
+                return True
+            return False
+
+class PersonalEventCRUD:
+    @staticmethod
+    def create_event(user_id: int, event_type: str, title: str, description: str = None,
+                    event_date: datetime = None, recurring: bool = False, 
+                    importance: str = "medium") -> PersonalEvent:
+        """Create a personal event for memory tracking"""
+        with get_session() as session:
+            event = PersonalEvent(
+                user_id=user_id,
+                event_type=event_type,
+                title=title,
+                description=description,
+                event_date=event_date,
+                recurring=recurring,
+                importance=importance
+            )
+            session.add(event)
+            session.commit()
+            session.refresh(event)
+            return event
+    
+    @staticmethod
+    def get_user_events(user_id: int, limit: int = 50) -> List[PersonalEvent]:
+        """Get personal events for a user"""
+        with get_session() as session:
+            query = select(PersonalEvent).where(
+                PersonalEvent.user_id == user_id
+            ).order_by(PersonalEvent.created_at.desc()).limit(limit)
+            return session.exec(query).all()
+    
+    @staticmethod
+    def get_upcoming_events(user_id: int, days: int = 30) -> List[PersonalEvent]:
+        """Get upcoming events in the next N days"""
+        with get_session() as session:
+            future_date = datetime.now() + timedelta(days=days)
+            query = select(PersonalEvent).where(
+                PersonalEvent.user_id == user_id,
+                PersonalEvent.event_date.isnot(None),
+                PersonalEvent.event_date <= future_date,
+                PersonalEvent.event_date >= datetime.now()
+            ).order_by(PersonalEvent.event_date)
+            return session.exec(query).all()
+    
+    @staticmethod
+    def delete_event(event_id: int) -> bool:
+        """Delete a personal event"""
+        with get_session() as session:
+            event = session.get(PersonalEvent, event_id)
+            if event:
+                session.delete(event)
+                session.commit()
+                return True
+            return False

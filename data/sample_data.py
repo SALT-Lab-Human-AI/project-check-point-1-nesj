@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, time
 from app.database.models import create_tables
 from app.database.crud import (
     UserCRUD, MedicationCRUD, ConversationCRUD, ReminderCRUD,
-    MedicationLogCRUD, CaregiverAlertCRUD
+    MedicationLogCRUD, CaregiverAlertCRUD, CaregiverPatientCRUD, PersonalEventCRUD
 )
 
 def initialize_sample_data():
@@ -46,6 +46,86 @@ def initialize_sample_data():
         )
         
         print(f"Created users: {user1.name} (ID: {user1.id}), {user2.name} (ID: {user2.id})")
+        
+        # Create sample caregivers
+        caregiver1 = UserCRUD.create_user(
+            name="Sarah Miller",
+            email="sarah.miller@carely.com",
+            phone="555-0200",
+            user_type="caregiver",
+            password="caregiver123",
+            preferences={
+                "notification_preferences": "email_and_sms"
+            }
+        )
+        
+        caregiver2 = UserCRUD.create_user(
+            name="Dr. James Wilson",
+            email="james.wilson@carely.com",
+            phone="555-0201",
+            user_type="caregiver",
+            password="caregiver123",
+            preferences={
+                "notification_preferences": "email"
+            }
+        )
+        
+        print(f"Created caregivers: {caregiver1.name} (ID: {caregiver1.id}), {caregiver2.name} (ID: {caregiver2.id})")
+        
+        # Assign patients to caregivers
+        CaregiverPatientCRUD.assign_patient(
+            caregiver_id=caregiver1.id,
+            patient_id=user1.id,
+            relationship="family",
+            notification_preferences={"alerts": True, "weekly_reports": True}
+        )
+        
+        CaregiverPatientCRUD.assign_patient(
+            caregiver_id=caregiver1.id,
+            patient_id=user2.id,
+            relationship="professional",
+            notification_preferences={"alerts": True, "weekly_reports": True}
+        )
+        
+        CaregiverPatientCRUD.assign_patient(
+            caregiver_id=caregiver2.id,
+            patient_id=user2.id,
+            relationship="professional",
+            notification_preferences={"alerts": True, "weekly_reports": False}
+        )
+        
+        print("Created caregiver-patient assignments")
+        
+        # Create personal events for memory
+        PersonalEventCRUD.create_event(
+            user_id=user1.id,
+            event_type="family_event",
+            title="Grandson's Birthday",
+            description="Tommy turns 10 years old",
+            event_date=datetime.now() + timedelta(days=15),
+            importance="high"
+        )
+        
+        PersonalEventCRUD.create_event(
+            user_id=user1.id,
+            event_type="appointment",
+            title="Doctor's Appointment",
+            description="Regular checkup with Dr. Smith",
+            event_date=datetime.now() + timedelta(days=7),
+            importance="medium"
+        )
+        
+        PersonalEventCRUD.create_event(
+            user_id=user2.id,
+            event_type="hobby",
+            title="Chess Club Meeting",
+            description="Weekly chess club at community center",
+            event_date=datetime.now() + timedelta(days=3),
+            recurring=True,
+            importance="medium"
+        )
+        
+        print("Created personal events")
         
         # Create sample medications for user1 (Dorothy)
         med1 = MedicationCRUD.create_medication(

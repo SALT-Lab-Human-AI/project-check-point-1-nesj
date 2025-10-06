@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from app.database.models import create_tables
 from app.scheduling.reminder_scheduler import ReminderScheduler
 from frontend.dashboard import run_dashboard
+from frontend.caregiver_portal import show_caregiver_dashboard
 from data.sample_data import initialize_sample_data
 
 # Initialize the database and sample data on startup
@@ -33,8 +34,21 @@ def main():
     # Initialize the app
     scheduler = initialize_app()
     
-    # Run the dashboard
-    run_dashboard()
+    # Portal selector in sidebar
+    if "caregiver_id" not in st.session_state:
+        with st.sidebar:
+            st.header("🚪 Portal Selection")
+            portal = st.radio("Choose portal:", ["👤 Patient Portal", "👨‍⚕️ Caregiver Portal"])
+            
+            if portal == "👨‍⚕️ Caregiver Portal":
+                show_caregiver_dashboard()
+                return
+    
+    # Run the appropriate dashboard
+    if "caregiver_id" in st.session_state:
+        show_caregiver_dashboard()
+    else:
+        run_dashboard()
 
 if __name__ == "__main__":
     main()

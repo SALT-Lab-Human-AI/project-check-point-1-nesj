@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, List
 from openai import OpenAI
 from app.database.crud import (
-    ConversationCRUD, MedicationCRUD, MedicationLogCRUD, CaregiverAlertCRUD, UserCRUD
+    ConversationCRUD, MedicationCRUD, MedicationLogCRUD, CaregiverAlertCRUD, UserCRUD, PersonalEventCRUD
 )
 from utils.sentiment_analysis import analyze_sentiment
 
@@ -52,6 +52,23 @@ Always respond with empathy and care, as if you're genuinely concerned about the
         context = "Recent conversation history:\n"
         for conv in reversed(conversations):  # Show chronologically
             context += f"User: {conv.message}\nCarely: {conv.response}\n---\n"
+        return context
+    
+    def get_personal_events_context(self, user_id: int) -> str:
+        """Get upcoming personal events for personalized conversation"""
+        upcoming_events = PersonalEventCRUD.get_upcoming_events(user_id, days=30)
+        
+        if not upcoming_events:
+            return "No upcoming events stored."
+        
+        context = "Upcoming important events to remember:\n"
+        for event in upcoming_events:
+            days_until = (event.event_date - datetime.now()).days
+            context += f"- {event.title} ({event.event_type}) in {days_until} days"
+            if event.description:
+                context += f": {event.description}"
+            context += "\n"
+        
         return context
 
     def log_medication_tool(self, user_id: int, medication_name: str, notes: str = "") -> str:
@@ -137,6 +154,9 @@ Always respond with empathy and care, as if you're genuinely concerned about the
             # Get conversation context
             context = self.get_conversation_context(user_id)
             
+            # Get personal events context
+            events_context = self.get_personal_events_context(user_id)
+            
             # Get user info
             user = UserCRUD.get_user(user_id)
             user_name = user.name if user else "there"
@@ -149,16 +169,20 @@ Always respond with empathy and care, as if you're genuinely concerned about the
             # Build the prompt
             prompt = f"""Context: {context}
 
+{events_context}
+
 User's name: {user_name}
 Conversation type: {conversation_type}
 Current message: {user_message}
 
 Please respond as Carely, keeping in mind:
 - This person's conversation history
+- Their upcoming events and important dates
 - The type of conversation (general chat, check-in, etc.)
 - Be warm, caring, and supportive
 - If they mention medications, offer to help log them
 - If they seem distressed, offer appropriate support
+- Reference their upcoming events naturally when relevant (e.g., "How are you feeling about your grandson's birthday coming up?")
 
 Respond naturally and warmly."""
 
