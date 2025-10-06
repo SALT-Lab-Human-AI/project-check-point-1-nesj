@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta, time
 import json
 from typing import List, Dict, Any
+from streamlit_mic_recorder import speech_to_text
 
 from app.database.crud import (
     UserCRUD, MedicationCRUD, ConversationCRUD, ReminderCRUD,
@@ -207,6 +208,56 @@ def show_chat_interface(user_id: int):
             {"role": "assistant", "content": conv.response, "timestamp": conv.timestamp}
             for conv in reversed(recent_convs)
         ]
+    
+    # Voice input section
+    st.markdown("### 🎤 Voice Input")
+    col1, col2 = st.columns([3, 1])
+    
+    with col1:
+        voice_text = speech_to_text(
+            language='en',
+            start_prompt="🎤 Press to speak",
+            stop_prompt="⏹️ Recording...",
+            just_once=False,
+            use_container_width=True,
+            key=f'voice_input_{user_id}'
+        )
+    
+    with col2:
+        st.info("💡 Click the mic button and speak your message!")
+    
+    # Process voice input
+    if voice_text:
+        # Automatically process voice input
+        prompt = voice_text
+        
+        # Add user message to chat
+        with st.chat_message("user"):
+            st.write(f"🎤 {prompt}")
+        
+        # Generate AI response
+        with st.chat_message("assistant", avatar="🏥"):
+            with st.spinner("Carely is thinking..."):
+                response_data = st.session_state.companion_agent.generate_response(
+                    user_id=user_id,
+                    user_message=prompt
+                )
+            
+            st.write(response_data["response"])
+            
+            # Show sentiment if available
+            if response_data.get("sentiment_score") is not None:
+                sentiment_emoji = get_sentiment_emoji(response_data["sentiment_score"])
+                st.caption(f"Detected mood: {sentiment_emoji} {response_data['sentiment_label']}")
+        
+        # Update session state
+        st.session_state.chat_history.append({"role": "user", "content": f"🎤 {prompt}", "timestamp": datetime.now()})
+        st.session_state.chat_history.append({"role": "assistant", "content": response_data["response"], "timestamp": datetime.now()})
+        
+        # Rerun to show the new messages
+        st.rerun()
+    
+    st.divider()
     
     # Chat container
     chat_container = st.container()

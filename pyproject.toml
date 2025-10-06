@@ -9,5 +9,6 @@ dependencies = [
     "openai>=2.2.0",
     "plotly>=6.3.1",
     "sqlmodel>=0.0.25",
+    "streamlit-mic-recorder>=0.0.8",
     "streamlit>=1.50.0",
 ]
