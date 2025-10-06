@@ -232,7 +232,8 @@ class CaregiverAlertCRUD:
             query = select(CaregiverAlert).where(CaregiverAlert.resolved == False)
             if user_id:
                 query = query.where(CaregiverAlert.user_id == user_id)
-            return session.exec(query).order_by(CaregiverAlert.created_at.desc()).all()
+            query = query.order_by(CaregiverAlert.created_at.desc())
+            return session.exec(query).all()
     
     @staticmethod
     def resolve_alert(alert_id: int) -> Optional[CaregiverAlert]:
