@@ -43,5 +43,24 @@ While ChatGPT was **factually reliable**, it lacked warmth and continuity. MetaA
 
 ---
 
+## Jasmitha's Study
 
+### Tools Explored
+
+- **Kimi**
+- **Perplexity**
+
+### Findings
+
+- **Kimi**
+- ✅ Strengths: Provides concise and structured responses.
+- ❌ Weaknesses: Lacks empathy and emotional tone; no reminders or calling ability; gives false confirmations; mood tracking inaccurate (reported 7 days when only 3 were logged).
+
+- **Perplexity**
+- ✅ Strengths: Uses a better, more natural tone; provides detailed, informative replies; can share relevant resource links (e.g., music).
+- ❌ Weaknesses: Asks excessive follow-up questions without independent reasoning; unable to execute actions directly (only shares links, doesn’t play media).
+
+### Summary
+
+Perplexity show potential for informational assistance but fall short in emotional intelligence, autonomous action, and reliability. Kimi was lacking in almost many cases. These gaps reinforce the need for our Elderly AI Companion to combine empathy, decision-making, and genuine contextual awareness for a more supportive user experience.
 
