@@ -1,6 +1,6 @@
 # Prompting Study — AI Companions
 
-This document summarizes the prompting study experiences of **Srivalli** and **Emmima**, who explored different AI tools to evaluate their effectiveness as supportive, context-aware companions.
+This document summarizes the prompting study experiences of our prompting study of different tools and discussion of results, who explored different AI tools to evaluate their effectiveness as supportive, context-aware companions.
 
 ---
 
@@ -64,3 +64,23 @@ While ChatGPT was **factually reliable**, it lacked warmth and continuity. MetaA
 
 Perplexity show potential for informational assistance but fall short in emotional intelligence, autonomous action, and reliability. Kimi was lacking in almost many cases. These gaps reinforce the need for our Elderly AI Companion to combine empathy, decision-making, and genuine contextual awareness for a more supportive user experience.
 
+---
+## Nivedita's Study
+### Tools Explored
+- **Gemini**
+- **Grok**
+
+### Findings
+
+- **Gemini**
+  
+- ✅ Strengths: Can integrate with external tools (e.g., schedules on Calendar, sends YouTube music links/videos); provides quick, to-the-point responses; technically capable with good task automation potential.
+- ❌ Weaknesses: Lacks empathy and warmth; responses are short and mechanical; weak memory (forgets past medication logs and health context); fails to maintain continuity across chats; confirmed but didn’t actually execute actions (e.g., contacting caregiver “Daniel”).
+- **Grok** 
+- ✅ Strengths: Demonstrates strong conversational tone and empathy; proactively recalls memory cues (e.g., missed doses, mood, or health issues); accurate in contextual reasoning and response consistency. Strong memory mainly regarding medication log.
+- ❌ Weaknesses: Despite claiming action execution (e.g., contacting Daniel), didn’t follow through; no memory persistence across new chat sessions; minor factual slips in complex, multi-step reasoning.
+
+### Summary
+Both Gemini and Grok show complementary strengths - Gemini excels in integration and automation, while Grok leads in empathy and memory continuity. However, both still fall short in real reliability and safe task execution, reaffirming the need for an Elderly AI Companion that merges empathy, context retention, and verified action-handling for genuine trust and care support.
+
+---
