@@ -1,20 +1,27 @@
-# My Project
+# carely Prototype
 
 
 
-![Figma Design](https://www.figma.com/file/your-figma-link)
-
-<img src="FIGMA_PROTOTYPE/images/img1.png" alt="UI Screenshot" width="400">
+[Here is our Carely Prototype](https://alone-radar-48376815.figma.site/)
 
 
-<img src="images/img2.png" alt="Dashboard" width="400">
+<img src="images/image1.png" alt="UI Screenshot" width="400">
 
-<img src="images/img1.png" alt="UI Screenshot" width="400">
 
-<img src="images/img2.png" alt="Dashboard" width="400">
+<img src="images/image2.png" alt="UI Screenshot" width="400">
 
-<img src="images/img1.png" alt="UI Screenshot" width="400">
 
-<img src="images/img2.png" alt="Dashboard" width="400">
+<img src="images/image3.png" alt="UI Screenshot" width="400">
+
+
+<img src="images/image4.png" alt="UI Screenshot" width="400">
+
+
+<img src="images/image5.png" alt="UI Screenshot" width="400">
+
+
+
+
+
 
 
