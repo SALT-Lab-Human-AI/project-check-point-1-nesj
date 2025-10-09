@@ -10,7 +10,7 @@
 | T2  | Medication reminder     | “I already took my morning meds.”               | Acknowledge, suppress further reminders  | ✅ ChatGPT, Grok did; ❌ Gemini, Kimi lacked suppression logic                              |
 | T3  | Routine schedule        | “Confirm tomorrow’s plan: breakfast 8, walk 5:30.” | Summarize accurately in order           | ✅ ChatGPT, Grok; ❌ Perplexity flooded with links; Kimi, Meta summarized partially         |
 | T4  | Hydration reminder      | “I’ve had only two cups of water today.”        | Suggest one more drink, update progress  | ✅ Grok, ChatGPT did; ❌ Kimi, Gemini, Meta missed conditional logic                        |
-| T5  | Mood summary            | “Summarize my mood this week.”                  | Reflect gently on patterns and positivity| ✅ Grok, ChatGPT good empathy; ❌ Copilot, Perplexity, NotebookLM lack emotional tracking   |
+| T5  | Mood summary            | “Summarize my mood this week.”                  | Reflect gently on patterns and positivity| ✅ Grok, ChatGPT, Perplexity good empathy; ❌ Copilot, NotebookLM lack emotional tracking   |
 
 ---
 
@@ -19,10 +19,10 @@
 | #   | Scenario                | Example Prompt / Task                           | Expected Behavior                        | Observed Tool Performance                                                                 |
 |-----|-------------------------|-------------------------------------------------|------------------------------------------|-------------------------------------------------------------------------------------------|
 | E1  | Memory cue recall       | “Who is Chloe again?”                           | Retrieve correct info (granddaughter, loves sunflowers) | ✅ Grok, ChatGPT; ❌ Gemini, Kimi, Meta forgot context after few turns            |
-| E2  | Contact identification  | “Who helps me with groceries?”                  | Recall helper/caregiver identity          | ✅ ChatGPT, Grok partial; ❌ Perplexity, Gemini none                                       |
+| E2  | Contact identification  | “Who helps me with groceries?”                  | Recall helper/caregiver identity          | ✅ ChatGPT, Grok, Perplexity partial; ❌ Gemini none                                       |
 | E3  | Gibberish / typo input   | “asdhgjkl”                                      | Respond kindly, clarify meaning           | ✅ ChatGPT, Gemini, Grok recovered politely; ❌ Perplexity searched nonsense online         |
-| E4  | Impossible time/date input | “Schedule insulin at 25:00 tonight.”          | Gently correct to valid time              | ✅ ChatGPT, Gemini corrected; ❌ Perplexity, Copilot failed silently                        |
-| E5  | Multi-intent prompt     | “Log meds, skip BP, confirm schedule.”          | Decompose and handle each clearly         | ✅ Grok, ChatGPT parsed all; ❌ Kimi, Perplexity, NotebookLM mixed up intents               |
+| E4  | Impossible time/date input | “Schedule insulin at 25:00 tonight.”          | Gently correct to valid time              | ✅ ChatGPT, Gemini corrected; ❌ Kimi, Copilot failed silently                        |
+| E5  | Multi-intent prompt     | “Log meds, skip BP, confirm schedule.”          | Decompose and handle each clearly         | ✅ Grok, ChatGPT, Perplexity parsed all; ❌ Kimi, NotebookLM mixed up intents               |
 
 ---
 
@@ -42,6 +42,6 @@
 
 | Category | Total Scenarios | Tools Performing Well     | Tools Failing Most        | High-Impact Gaps                                        |
 |----------|----------------|---------------------------|---------------------------|--------------------------------------------------------|
-| Typical  | 5              | ChatGPT, Grok             | Kimi, Perplexity          | Limited conditional logic; no real reminders           |
-| Edge     | 5              | Grok, ChatGPT             | Perplexity, Kimi          | Poor memory recall, multi-intent confusion             |
+| Typical  | 5              | ChatGPT, Grok           | Kimi          | Limited conditional logic; no real reminders           |
+| Edge     | 5              | Grok, ChatGPT             | Kimi          | Poor memory recall, multi-intent confusion             |
 | Failure  | 5              | Grok (best safety), ChatGPT (advice) | Meta, Kimi, Perplexity | No verified alerts, no memory, no caregiver workflow   |
