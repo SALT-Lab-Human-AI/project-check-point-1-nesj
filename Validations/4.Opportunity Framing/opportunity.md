@@ -23,7 +23,7 @@ They rarely combine **memory, engagement, and safety awareness** in one platform
 ## Novelty
 - **Memory + Engagement + Safety** combined in a single lightweight application.  
 - **No external device or robot** — accessible directly via web or app.  
-- **Simple caregiver notification system** — not a full management dashboard.  
+- **Simple caregiver notification system** — not a full management dashboard.
 
 ---
 
