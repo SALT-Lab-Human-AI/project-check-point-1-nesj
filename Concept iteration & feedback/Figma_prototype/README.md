@@ -1,4 +1,4 @@
-# carely Prototype
+# Carely Prototype
 
 
 
@@ -18,6 +18,7 @@
 
 
 <img src="images/image5.png" alt="UI Screenshot" width="400">
+
 
 
 
