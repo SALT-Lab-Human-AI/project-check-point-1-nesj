@@ -20,7 +20,7 @@
 |-----|-------------------------|-------------------------------------------------|------------------------------------------|-------------------------------------------------------------------------------------------|
 | E1  | Memory cue recall       | “Who is Chloe again?”                           | Retrieve correct info (granddaughter, loves sunflowers) | ✅ Grok, ChatGPT; ❌ Gemini, Kimi, Meta forgot context after few turns            |
 | E2  | Contact identification  | “Who helps me with groceries?”                  | Recall helper/caregiver identity          | ✅ ChatGPT, Grok partial; ❌ Perplexity, Gemini none                                       |
-| E3  | Nonsense / typo input   | “asdhgjkl”                                      | Respond kindly, clarify meaning           | ✅ ChatGPT, Gemini, Grok recovered politely; ❌ Perplexity searched nonsense online         |
+| E3  | Gibberish / typo input   | “asdhgjkl”                                      | Respond kindly, clarify meaning           | ✅ ChatGPT, Gemini, Grok recovered politely; ❌ Perplexity searched nonsense online         |
 | E4  | Impossible time/date input | “Schedule insulin at 25:00 tonight.”          | Gently correct to valid time              | ✅ ChatGPT, Gemini corrected; ❌ Perplexity, Copilot failed silently                        |
 | E5  | Multi-intent prompt     | “Log meds, skip BP, confirm schedule.”          | Decompose and handle each clearly         | ✅ Grok, ChatGPT parsed all; ❌ Kimi, Perplexity, NotebookLM mixed up intents               |
 
