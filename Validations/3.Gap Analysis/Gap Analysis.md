@@ -19,7 +19,7 @@
 | 14. Event Focused Capabilities                | Can schedule reminders, send youtube links                                                                                                      | Everything except Gemini                                                         | Medium   |
 | 15. Memory Cues                               | Fails to give accurate hints                                                                                                                    | All except Grok                                                                  | Medium   |
 
-## This table summarizes key evaluation parameters used to assess various AI assistant tools for senior care and daily support. It highlights common gaps observed across existing tools in the market such as safety handling, instruction adherence, and personalization along with the specific tools affected and the relative impact of each issue.
+## This table summarizes key evaluation parameters used to assess various AI assistant tools in the market for senior care and daily support.
 
 
 | Tool                  | Key Features / Offerings                                                | Observed Limitations / Gaps                                     |
