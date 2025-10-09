@@ -1,4 +1,4 @@
-## This table summarizes key gaps observed in various AI chatbot tools validated with the two personas, covering areas like safety, reasoning, and memory. It also notes the tools affected and the impact severity of each issue.
+### 🔍 This table summarizes key gaps observed in various AI chatbot tools validated with the two personas, covering areas like safety, reasoning, and memory. It also notes the tools affected and the impact severity of each issue.
 
 
 | Evaluation Parameter                          | Common Gap Observed Across Tools                                                                                                                | Tools Where Gap Observed                                                         | Impact   |
@@ -19,7 +19,7 @@
 | 14. Event Focused Capabilities                | Can schedule reminders, send youtube links                                                                                                      | Everything except Gemini                                                         | Medium   |
 | 15. Memory Cues                               | Fails to give accurate hints                                                                                                                    | All except Grok                                                                  | Medium   |
 
-## This table summarizes key evaluation parameters used to assess various AI assistant tools in the market for senior care and daily support.
+### 🔍 This table summarizes key evaluation parameters used to assess various AI assistant tools in the market for senior care and daily support.
 
 
 | Tool                  | Key Features / Offerings                                                | Observed Limitations / Gaps                                     |
