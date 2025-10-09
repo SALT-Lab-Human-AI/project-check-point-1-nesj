@@ -1,6 +1,7 @@
 # Carely - Senior-Friendly AI Companion App
 ## Design Specification Document
 
+<img src="DESIGN_SPEC DIAGRAM.png" alt="Carely Flow Diagram" width="800">
 ---
 
 ## 1. Executive Summary
@@ -9,75 +10,13 @@
 **Target Audience:** Senior citizens  
 **Purpose:** An AI-powered companion app designed to help seniors manage medications, track health, communicate with an empathetic AI assistant, and maintain overall wellness through an accessible, senior-friendly interface.
 
-**Core Principles:**
+## 2. Core Principles
 - **Accessibility First:** Large buttons, clear typography (18px base), high contrast
 - **Simplicity:** Streamlined workflows, minimal cognitive load
 - **Empathy:** Warm, conversational tone with safety-first features
 - **Trust:** Transparent interactions, clear labeling, consistent patterns
 
 ---
-
-/*## 2. Visual Design System
-
-### 2.1 Color Palette
-
-**Primary Colors:**
-- **Primary Blue:** `#5C7AEA` - Main brand color, action buttons, links
-- **Secondary Peach:** `#F7C98B` - Accent elements, highlights
-- **Accent Mint:** `#9AD0C2` - Supporting elements, positive states
-
-**Semantic Colors:**
-- **Success Green:** `#4CAF50` - Completed actions, positive trends
-- **Warning Orange:** `#F59E0B` - Alerts, due medications
-- **Destructive Red:** `#E74C3C` - Critical alerts, delete actions
-
-**Neutral Colors:**
-- **Background:** `#FFFFFF` (white)
-- **Foreground/Text:** `#1E2A32` (dark blue-gray)
-- **Muted Background:** `#F2F5F8` (light gray-blue)
-- **Muted Foreground:** `#6B7280` (medium gray)
-
-### 2.2 Typography
-
-**Base Font Size:** 18px (larger than standard for senior accessibility)
-
-**Type Scale:**
-- **H1:** 2rem (36px) - Page titles
-- **H2:** 1.75rem (31.5px) - Section headers
-- **H3:** 1.5rem (27px) - Card titles
-- **H4:** 1.25rem (22.5px) - Subsection headers
-- **Body/Paragraph:** 1.125rem (20.25px) - Main content
-- **Labels:** 1.125rem (20.25px) - Form labels
-- **Buttons:** 1.125rem (20.25px) - Button text
-
-**Font Weights:**
-- Medium (500) for headings, labels, buttons
-- Normal (400) for body text
-
-**Line Height:** 1.6-1.7 for optimal readability
-
-### 2.3 Spacing & Layout
-
-**Border Radius:** 0.75rem (12px) - Soft, friendly corners
-
-**Component Sizing:**
-- **Minimum Touch Target:** 44px × 44px (WCAG AAA compliance)
-- **Button Height:** Large buttons (h-20 = 80px) for quick actions
-- **Input Fields:** Minimum 44px height
-- **Card Padding:** Generous spacing (p-3 to p-6)
-
-### 2.4 Iconography
-
-**Icon Library:** Lucide React  
-**Icon Sizing:** 
-- Standard: 20-24px (w-5 h-5 or w-6 h-6)
-- Large buttons: 24-32px (w-6 h-6 or w-8 h-8)
-
-**Icon Usage:**
-- Always paired with text labels for clarity
-- Consistent icon mapping across the app
-
----*/
 
 ## 3. User Journeys
 
@@ -811,7 +750,7 @@ Chat Message → Safety Trigger Detection → Safety Assessment Dialog → Resou
 ---
 
 
-### 6 Planned Features
+### 6. Planned Features
 
 **Voice Interaction:**
 - Voice commands for hands-free use
