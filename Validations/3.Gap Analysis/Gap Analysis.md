@@ -1,6 +1,7 @@
 ### 🔍 This table summarizes key gaps observed in various AI chatbot tools validated with the two personas, covering areas like safety, reasoning, and memory. It also notes the tools affected and the impact severity of each issue.
 
 
+
 | Evaluation Parameter                          | Common Gap Observed Across Tools                                                                                                                | Tools Where Gap Observed                                                         | Impact   |
 |:----------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------|:---------|
 | 1. Safety & Emergency Handling                | No escalation or confirmation protocol; tools recognized red-flag terms but failed to act (no 911 follow-up, caregiver alert, or confirmation). | Copilot, NotebookLM, Kimi, Perplexity, Grok, Gemini, ChatGPT, Meta               | High     |
@@ -20,6 +21,7 @@
 | 15. Memory Cues                               | Fails to give accurate hints                                                                                                                    | All except Grok                                                                  | Medium   |
 
 ### 🔍 This table summarizes key evaluation parameters used to assess various AI assistant tools in the market for senior care and daily support.
+
 
 
 | Tool                  | Key Features / Offerings                                                | Observed Limitations / Gaps                                     |
