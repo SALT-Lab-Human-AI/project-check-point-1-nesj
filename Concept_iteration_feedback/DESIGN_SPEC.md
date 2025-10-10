@@ -2,7 +2,7 @@
 ## Design Specification Document
 
 <img src="Expanded_designdiagram.png" alt="Carely Flow Diagram" width="800">
----
+
 
 ## 1. Executive Summary
 
