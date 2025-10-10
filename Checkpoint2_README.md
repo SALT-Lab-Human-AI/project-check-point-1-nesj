@@ -5,8 +5,9 @@
 ### Validations
 
 #### 1. Prompting Protocol
+- [Persona Prompts](Validations/1.Prompting%20protocol/Persona_Prompts.md) - Persona-based prompting strategies and templates 
 - [Case Classification](Validations/1.Prompting%20protocol/Case%20classification.md) - Guidelines and protocols for case classification  
-- [Persona Prompts](Validations/1.Prompting%20protocol/Persona_Prompts.md) - Persona-based prompting strategies and templates  
+ 
 
 #### 2. Prompts Transcripts and Outputs
 - [View Transcripts & Outputs](Validations/2.Prompts%20transcripts_outputs/) - Complete transcripts and AI model outputs
