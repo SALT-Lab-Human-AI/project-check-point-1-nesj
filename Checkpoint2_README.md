@@ -1,8 +1,19 @@
-# AI Validation & Concept Iteration Project
+## 💡 Carely — Checkpoint 2 Presentation
 
-## Project Structure
+This presentation focuses on the **Validation and Concept Iteration** phase for our project **Carely**.
 
-### Validations
+---
+
+### 🧠 Validation Phase – Persona Prompts
+
+We started by designing detailed personas to simulate realistic senior-care conversations and evaluate how general AI tools respond with **empathy**, **safety**, and **consistency**.
+
+#### 🔹 Key Highlights
+- Two personas — **Maggie (79)** and **Lilly (82)** — living independently with age-related conditions.  
+- Each includes **medical routines**, **emotional needs**, and **safety protocols**.  
+- Crafted to help AI tools understand **context**, **caregiving**, and **conversation flow**.  
+- Used to test tools’ **empathy**, **memory**, and **real-world responsiveness**.  
+
 
 #### 1. Prompting Protocol
 - [Persona Prompts](Validations/1.Prompting%20protocol/Persona_Prompts.md) - Persona-based prompting strategies and templates 
