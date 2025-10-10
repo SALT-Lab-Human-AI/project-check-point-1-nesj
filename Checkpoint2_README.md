@@ -38,7 +38,7 @@ Revealed major differences in **empathy, memory retention, and emergency handlin
 
 ### Concept Iteration & Feedback
 
-- [Design Spec Diagram](Concept_iteration_feedback/DESIGN_SPEC%20DIAGRAM.png) - Visual architecture diagram
-- [Design Spec Document](Concept_iteration_feedback/Expanded_designdiagram.png) - Complete design specifications
+- [Design Spec Diagram](Concept_iteration_feedback/Expanded_designdiagram.png) - Visual architecture diagram
+- [Design Spec Document](Concept_iteration_feedback/DESIGN_SPEC.md) - Complete design specifications
 - [Key Screens of Prototype](Concept_iteration_feedback/Figma_prototype/Figma_README.md) - Interactive prototype screens
 - Prototype link: https://alone-radar-48376815.figma.site/
