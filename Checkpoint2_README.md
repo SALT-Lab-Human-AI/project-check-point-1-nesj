@@ -12,7 +12,8 @@
 #### 2. Prompts Transcripts and Outputs
 - [View Transcripts & Outputs](Validations/2.Prompts%20transcripts_outputs/) - Complete transcripts and AI model outputs
 
-#### 3. Gap Analysis
+#### 3. Gap Analysis 
+## Tools Covered: Gemini, Grok, Kimi, Perplexity, Copilot, NotebookLM, MetaAI, ChatGPT
 - [Gap Analysis of Existing Tools](Validations/3.Gap%20Analysis/Gap%20Analysis.md) - Comprehensive analysis of current tool limitations
 - [Prompting Discussion](Validations/3.Gap%20Analysis/discussions.md) - Team discussions and insights
 
