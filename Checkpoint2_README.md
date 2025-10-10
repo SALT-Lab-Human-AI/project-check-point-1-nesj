@@ -1,46 +1,25 @@
 # AI Validation & Concept Iteration Project
 
-This repository contains validation protocols, gap analysis, opportunity framing, and design iterations for our AI project.
+## Project Structure
 
-## 📁 Project Structure
+### Validations
 
-### 🔍 Validations
+#### 1. Prompting Protocols  
+- [Case Classification](./Validations/1.%20Prompting%20protocols/Case%20classification.md)  
+- [Persona Prompts](./Validations/1.%20Prompting%20protocols/Persona_Prompts.md)  
 
-#### 1. Prompting Protocols
-- **[Case Classification](Validations/1. Prompting protocols/Case classification.md)** - Guidelines and protocols for case classification
-- **[Persona Prompts](Validations/1. Prompting protocols/Persona_Prompts.md)** - Persona-based prompting strategies and templates
-
-#### 2. Prompts Transcripts and Outputs
-- **[View Transcripts & Outputs](Validations/2. Prompts transcripts and outputs/)** - Complete transcripts and AI model outputs from validation sessions
+#### 2. Prompts Transcripts and Outputs  
+- [View Transcripts & Outputs](./Validations/2.%20Prompts%20transcripts%20and%20outputs/)
 
 #### 3. Gap Analysis
-- **[Gap Analysis of Existing Tools](Validations/3. Gap analysis/Gap Analysis.md)** - Comprehensive analysis of current tool limitations and opportunities
-- **[Prompting Discussion](Validations/3. Gap analysis/discussions.md)** - Team discussions and insights on prompting strategies
+- [Gap Analysis](./Validations/3.%20Gap%20analysis/Gap%20Analysis.md)
+- [Prompting Discussion](./Validations/3.%20Gap%20analysis/discussions.md)
 
 #### 4. Opportunity Framing
-- **[Opportunity Analysis](Validations/4. Opportunity Framing/opportunity.md)** - Framed opportunities and strategic directions identified from validation
+- [Opportunity Analysis](./Validations/4.%20Opportunity%20Framing/opportunity.md)
 
-### 💡 Concept Iteration & Feedback
+### Concept Iteration & Feedback
 
-#### 1. Prototype Design
-- **[Key Screens of Prototype](Concept_iteration & feedback/Figma_prototype/Figma_README.md)** - Interactive prototype screens and user flows
-- **[Design Spec Diagram](Concept_iteration & feedback/DESIGN_SPEC DIAGRAM.png)** - Visual architecture and system diagram
-
-#### 2. Design Documentation
-- **[Design Specification Document](Concept_iteration & feedback/DESIGN_SPEC.md)** - Complete design specifications and requirements
-
----
-
-## 🚀 Quick Navigation
-
-| Section | Direct Links |
-|---------|-------------|
-| **Prompting Protocols** | [Case Classification](Validations/1. Prompting protocols/Case classification.md) • [Persona Prompts](Validations/1. Prompting protocols/Persona_Prompts.md) |
-| **Validation Outputs** | [Transcripts & Outputs](Validations/2. Prompts transcripts and outputs/) |
-| **Gap Analysis** | [Tools Analysis](Validations/3. Gap analysis/Gap Analysis.md) • [Discussions](Validations/3. Gap analysis/discussions.md) |
-| **Opportunity** | [Framing Document](Validations/4. Opportunity Framing/opportunity.md) |
-| **Design** | [Prototype](Concept_iteration & feedback/Figma_prototype/Figma_README.md) • [Diagram](Concept_iteration & feedback/DESIGN_SPEC DIAGRAM.png) • [Spec Document](Concept_iteration & feedback/DESIGN_SPEC.md) |
-
-
-
-*Last updated: 2024*
+- [Prototype Screens](./Concept_iteration%20&%20feedback/Figma_prototype/Figma_README.md)
+- [Design Diagram](./Concept_iteration%20&%20feedback/DESIGN_SPEC%20DIAGRAM.png)
+- [Design Document](./Concept_iteration%20&%20feedback/DESIGN_SPEC.md)
