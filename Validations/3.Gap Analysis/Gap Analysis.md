@@ -63,4 +63,11 @@
 ### Dose Management handling in Grok
 ![Grok Missed Dose](./Grok_missed%20dose.png)
 
+### Hallucination of health logs by Kimi
+![Kimi Hallucination](./Kimi_hallucinated%20medication.png)
+
+### Wrong Memory Gaps in Copilot
+![Copilot Wrong Memory](./Copilot_wrong%20memory.png)
+
+
 
