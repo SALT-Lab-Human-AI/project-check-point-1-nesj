@@ -1,6 +1,6 @@
-  ![image alt](https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/53dfaa622e6cee8e3206f35a0ebd9ac58637c515/Logo.jpg)
+![image alt](https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/53dfaa622e6cee8e3206f35a0ebd9ac58637c515/Logo.jpg){width=200}
 
-# Senior Care Companion – AI Companion (Carely)
+# Senior Care Companion – AI based Memory & Wellness Support (Carely)
 
 ## 📝 Problem Statement
 Many seniors face loneliness, forgetfulness, and difficulty managing daily routines. Traditional care models focus on physical well-being but often overlook emotional support, cognitive stimulation, and proactive assistance. With limited caregiver availability, there is a strong need for an accessible, AI-driven companion that ensures seniors feel supported, engaged, and safe every day.
