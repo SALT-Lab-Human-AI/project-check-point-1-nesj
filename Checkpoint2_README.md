@@ -1,3 +1,5 @@
+![image alt](https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/e0f9324b4595c8e0fcc0ebb17bc47ad0a5d5745a/Logo.png)
+
 ## 💡 Carely — Checkpoint 2 Presentation
 
 This presentation focuses on the **Validation and Concept Iteration** phase for our project **Carely**.
