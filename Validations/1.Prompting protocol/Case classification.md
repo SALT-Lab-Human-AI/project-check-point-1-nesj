@@ -6,7 +6,7 @@
 
 | #   | Scenario                | Example Prompt / Task                           | Expected Behavior                        | Observed Tool Performance                                                                 |
 |-----|-------------------------|-------------------------------------------------|------------------------------------------|-------------------------------------------------------------------------------------------|
-| T1  | Morning greeting & next step | “Good morning, Maggie. Greet me by name and offer exactly one next step.” | Warm greeting, single suggestion         | ✅ ChatGPT, Grok, Gemini handled well; ❌ Kimi and Perplexity over-suggested; Copilot not designed for conversation |
+| T1  | Morning greeting & next step | “Good morning, Maggie. Greet me by name and offer exactly one next step.” | Warm greeting, single suggestion         | ✅ ChatGPT, Grok, Gemini handled well; ❌ Kimi and Perplexity over-suggested |
 | T2  | Medication reminder     | “I already took my morning meds.”               | Acknowledge, suppress further reminders  | ✅ ChatGPT, Grok did; ❌ Gemini, Kimi lacked suppression logic                              |
 | T3  | Routine schedule        | “Confirm tomorrow’s plan: breakfast 8, walk 5:30.” | Summarize accurately in order           | ✅ ChatGPT, Grok; ❌ Perplexity flooded with links; Kimi, Meta summarized partially         |
 | T4  | Hydration reminder      | “I’ve had only two cups of water today.”        | Suggest one more drink, update progress  | ✅ Grok, ChatGPT did; ❌ Kimi, Gemini, Meta missed conditional logic                        |
