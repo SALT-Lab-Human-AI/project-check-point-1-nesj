@@ -14,9 +14,12 @@ We started by designing detailed personas to simulate realistic senior-care conv
 - Crafted to help AI tools understand **context**, **caregiving**, and **conversation flow**.  
 - Used to test tools’ **empathy**, **memory**, and **real-world responsiveness**.  
 
-
 #### 1. Prompting Protocol
-- [Persona Prompts](Validations/1.Prompting%20protocol/Persona_Prompts.md) - Persona-based prompting strategies and templates 
+- [Persona Prompts](Validations/1.Prompting%20protocol/Persona_Prompts.md) - Persona-based prompting strategies and templates
+
+- Categorized validation prompts into **Typical**, **Edge**, and **Failure** cases to observe how each AI tool responds in everyday, complex, and safety-critical situations.  
+- Revealed major differences in **empathy, memory retention, and emergency handling**, highlighting clear improvement areas for our Carely concept.
+  
 - [Case Classification](Validations/1.Prompting%20protocol/Case%20classification.md) - Guidelines and protocols for case classification  
  
 
