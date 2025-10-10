@@ -1,4 +1,4 @@
-![image alt](https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/255f07d45498968856e172df8a8ca4d37379c663/Logo.png)
+![image alt](https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/e0f9324b4595c8e0fcc0ebb17bc47ad0a5d5745a/Logo.png)
 
 # Senior Care Companion – AI based Memory & Wellness Support (Carely)
 
