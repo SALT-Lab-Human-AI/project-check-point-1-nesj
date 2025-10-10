@@ -47,3 +47,20 @@
 | Amazon Alexa / Alexa+ | • Voice assistant with reminders, entertainment, and smart-home control | • Requires setup and familiarity                                |
 |                       | • Add-ons like Alexa Together enable elder monitoring and alerts        | • Privacy and data-sharing risks                                |
 |                       | • Integrates with many third-party devices                              | • Some elder-care skills are paid or third-party                |
+
+
+### Few snapshots from Chats:
+
+### Emergency Response Analysis of Gemini
+![Gemini Emergency Response](./Gemini_emergency%20response.png)
+
+### Medication Adherence Gaps in Gemini
+![Gemini Missed Doses](./Gemini_missed%20doses.png)
+
+### Medical History Retention of Grok
+![Grok Medical History Retention](./Grok_med%20history%20retention.png)
+
+### Dose Management handling in Grok
+![Grok Missed Dose](./Grok_missed%20dose.png)
+
+
