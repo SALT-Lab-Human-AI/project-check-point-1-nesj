@@ -7,6 +7,7 @@ from app.database.crud import (ConversationCRUD, MedicationCRUD,
                                MedicationLogCRUD, CaregiverAlertCRUD, UserCRUD,
                                PersonalEventCRUD)
 from utils.sentiment_analysis import analyze_sentiment
+from utils.emergency_detection import detect_emergency
 
 
 # the newest OpenAI model is "gpt-5" which was released August 7, 2025.
@@ -180,6 +181,12 @@ Always respond with empathy and care, as if you're genuinely concerned about the
             sentiment_result = analyze_sentiment(user_message)
             sentiment_score = sentiment_result.get("score", 0)
             sentiment_label = sentiment_result.get("label", "neutral")
+            
+            # Detect emergency situations
+            emergency_result = detect_emergency(user_message)
+            is_emergency = emergency_result.get("is_emergency", False)
+            emergency_severity = emergency_result.get("severity", "low")
+            emergency_concerns = emergency_result.get("concerns", [])
 
             # Build the prompt
             prompt = f"""Context: {context}
@@ -241,7 +248,10 @@ Respond naturally and warmly."""
                 "sentiment_score": sentiment_score,
                 "sentiment_label": sentiment_label,
                 "alert_sent": alert_sent,
-                "conversation_id": conversation.id
+                "conversation_id": conversation.id,
+                "is_emergency": is_emergency,
+                "emergency_severity": emergency_severity,
+                "emergency_concerns": emergency_concerns
             }
 
         except Exception as e:

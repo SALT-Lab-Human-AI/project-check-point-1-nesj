@@ -14,6 +14,7 @@ class User(SQLModel, table=True):
     phone: Optional[str] = None
     preferences: Optional[str] = None  # JSON string for preferences
     emergency_contact: Optional[str] = None
+    telegram_chat_id: Optional[str] = None  # Telegram chat ID for notifications
     user_type: str = Field(default="patient")  # patient, caregiver, admin
     password_hash: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.now)

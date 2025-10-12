@@ -9,10 +9,11 @@ from streamlit_mic_recorder import speech_to_text
 
 from app.database.crud import (
     UserCRUD, MedicationCRUD, ConversationCRUD, ReminderCRUD,
-    MedicationLogCRUD, CaregiverAlertCRUD
+    MedicationLogCRUD, CaregiverAlertCRUD, CaregiverPatientCRUD
 )
 from app.agents.companion_agent import CompanionAgent
 from utils.sentiment_analysis import analyze_sentiment, get_sentiment_emoji, get_sentiment_color
+from utils.telegram_notification import send_emergency_alert
 
 def run_dashboard():
     """Main dashboard function"""
@@ -189,10 +190,79 @@ def show_overview(user_id: int):
                 st.session_state.show_medication_log = False
                 st.rerun()
 
+def show_emergency_safety_sheet(user_id: int, concerns: list, severity: str, message: str):
+    """Display emergency safety sheet with three-step flow"""
+    user = UserCRUD.get_user(user_id)
+    
+    st.error("🚨 **EMERGENCY ALERT DETECTED**")
+    
+    st.markdown("### Safety Check")
+    st.warning(f"We noticed you mentioned: {', '.join(concerns)}")
+    
+    st.markdown("---")
+    st.markdown("### 📋 **What would you like to do?**")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if st.button("📞 **Contact Caregiver**", use_container_width=True, type="primary"):
+            caregivers = CaregiverPatientCRUD.get_patient_caregivers(user_id)
+            
+            if caregivers:
+                alert_sent = False
+                for caregiver in caregivers:
+                    if caregiver.telegram_chat_id:
+                        result = send_emergency_alert(
+                            chat_id=caregiver.telegram_chat_id,
+                            patient_name=user.name,
+                            concerns=concerns,
+                            severity=severity,
+                            message=message
+                        )
+                        if result.get("success"):
+                            alert_sent = True
+                
+                if alert_sent:
+                    st.success("✅ **Help is on the way!**")
+                    st.info(f"Your caregiver has been notified via Telegram and will be with you shortly.")
+                    st.session_state.emergency_handled = True
+                else:
+                    st.warning("⚠️ We couldn't send the Telegram alert. Please call your caregiver directly.")
+                    if caregivers[0].phone:
+                        st.info(f"📞 Caregiver phone: {caregivers[0].phone}")
+            else:
+                st.warning("No caregiver assigned. Please contact emergency services if needed.")
+                st.info("📞 Emergency: 911")
+    
+    with col2:
+        if st.button("✅ **I Feel OK**", use_container_width=True):
+            st.success("**Feeling better!**")
+            st.info("That's great to hear! If you need anything, I'm here for you.")
+            st.session_state.emergency_handled = True
+    
+    st.markdown("---")
+    st.caption("💡 If this is a medical emergency, please call 911 immediately.")
+
 def show_chat_interface(user_id: int):
     """Show chat interface with Carely"""
     user = UserCRUD.get_user(user_id)
     st.header(f"💬 Chat with Carely - {user.name}")
+    
+    # Display emergency safety sheet if emergency detected
+    if st.session_state.get("emergency_data") and not st.session_state.get("emergency_handled"):
+        emergency_data = st.session_state.emergency_data
+        show_emergency_safety_sheet(
+            user_id=user_id,
+            concerns=emergency_data.get("concerns", []),
+            severity=emergency_data.get("severity", "medium"),
+            message=emergency_data.get("message", "")
+        )
+        
+        if st.session_state.get("emergency_handled"):
+            st.session_state.emergency_data = None
+            st.rerun()
+        
+        return
     
     # Initialize chat history in session state
     if 'chat_history' not in st.session_state:
@@ -254,6 +324,14 @@ def show_chat_interface(user_id: int):
         st.session_state.chat_history.append({"role": "user", "content": f"🎤 {prompt}", "timestamp": datetime.now()})
         st.session_state.chat_history.append({"role": "assistant", "content": response_data["response"], "timestamp": datetime.now()})
         
+        # Check for emergency
+        if response_data.get("is_emergency") and not st.session_state.get("emergency_handled"):
+            st.session_state.emergency_data = {
+                "concerns": response_data.get("emergency_concerns", []),
+                "severity": response_data.get("emergency_severity", "medium"),
+                "message": prompt
+            }
+        
         # Rerun to show the new messages
         st.rerun()
     
@@ -296,6 +374,14 @@ def show_chat_interface(user_id: int):
         # Update session state
         st.session_state.chat_history.append({"role": "user", "content": prompt, "timestamp": datetime.now()})
         st.session_state.chat_history.append({"role": "assistant", "content": response_data["response"], "timestamp": datetime.now()})
+        
+        # Check for emergency
+        if response_data.get("is_emergency") and not st.session_state.get("emergency_handled"):
+            st.session_state.emergency_data = {
+                "concerns": response_data.get("emergency_concerns", []),
+                "severity": response_data.get("emergency_severity", "medium"),
+                "message": prompt
+            }
         
         # Rerun to show the new messages
         st.rerun()
