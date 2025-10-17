@@ -12,4 +12,5 @@ dependencies = [
     "streamlit-mic-recorder>=0.0.8",
     "streamlit>=1.50.0",
     "groq>=0.32.0",
+    "gtts>=2.5.4",
 ]
