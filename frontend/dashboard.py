@@ -15,6 +15,7 @@ from app.database.crud import (
 from app.agents.companion_agent import CompanionAgent
 from utils.sentiment_analysis import analyze_sentiment, get_sentiment_emoji, get_sentiment_color
 from utils.telegram_notification import send_emergency_alert
+from utils.tts_helper import generate_speech_audio
 
 def run_dashboard():
     """Main dashboard function"""
@@ -292,13 +293,22 @@ def show_chat_interface(user_id: int):
     
     with chat_container:
         # Display chat history
-        for message in st.session_state.chat_history[-10:]:  # Show last 10 messages
+        for idx, message in enumerate(st.session_state.chat_history[-10:]):  # Show last 10 messages
             if message["role"] == "user":
                 with st.chat_message("user"):
                     st.write(message["content"])
             else:
                 with st.chat_message("assistant", avatar="🏥"):
-                    st.write(message["content"])
+                    msg_col1, msg_col2 = st.columns([9, 1])
+                    
+                    with msg_col1:
+                        st.write(message["content"])
+                    
+                    with msg_col2:
+                        if st.button("🔊", key=f"listen_{idx}", help="Listen to this message"):
+                            audio_bytes = generate_speech_audio(message["content"], slow=True)
+                            if audio_bytes:
+                                st.audio(audio_bytes, format='audio/mp3')
     
     # Integrated input bar with voice and text
     st.markdown("---")
