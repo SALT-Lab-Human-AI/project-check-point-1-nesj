@@ -287,64 +287,6 @@ def show_chat_interface(user_id: int):
             for conv in reversed(recent_convs)
         ]
     
-    # Voice input section
-    st.markdown("### 🎤 Voice Input")
-    col1, col2 = st.columns([3, 1])
-    
-    with col1:
-        voice_text = speech_to_text(
-            language='en',
-            start_prompt="🎤 Press to speak",
-            stop_prompt="⏹️ Recording...",
-            just_once=False,
-            use_container_width=True,
-            key=f'voice_input_{user_id}'
-        )
-    
-    with col2:
-        st.info("💡 Click the mic button and speak your message!")
-    
-    # Process voice input
-    if voice_text:
-        # Automatically process voice input
-        prompt = voice_text
-        
-        # Add user message to chat
-        with st.chat_message("user"):
-            st.write(f"🎤 {prompt}")
-        
-        # Generate AI response
-        with st.chat_message("assistant", avatar="🏥"):
-            with st.spinner("Carely is thinking..."):
-                response_data = st.session_state.companion_agent.generate_response(
-                    user_id=user_id,
-                    user_message=prompt
-                )
-            
-            st.write(response_data["response"])
-            
-            # Show sentiment if available
-            if response_data.get("sentiment_score") is not None:
-                sentiment_emoji = get_sentiment_emoji(response_data["sentiment_score"])
-                st.caption(f"Detected mood: {sentiment_emoji} {response_data['sentiment_label']}")
-        
-        # Update session state
-        st.session_state.chat_history.append({"role": "user", "content": f"🎤 {prompt}", "timestamp": datetime.now()})
-        st.session_state.chat_history.append({"role": "assistant", "content": response_data["response"], "timestamp": datetime.now()})
-        
-        # Check for emergency
-        if response_data.get("is_emergency") and not st.session_state.get("emergency_handled"):
-            st.session_state.emergency_data = {
-                "concerns": response_data.get("emergency_concerns", []),
-                "severity": response_data.get("emergency_severity", "medium"),
-                "message": prompt
-            }
-        
-        # Rerun to show the new messages
-        st.rerun()
-    
-    st.divider()
-    
     # Chat container
     chat_container = st.container()
     
@@ -358,11 +300,44 @@ def show_chat_interface(user_id: int):
                 with st.chat_message("assistant", avatar="🏥"):
                     st.write(message["content"])
     
-    # Chat input
-    if prompt := st.chat_input(f"Type your message to Carely here, {user.name}..."):
-        # Add user message to chat
+    # Integrated input bar with voice and text
+    st.markdown("---")
+    st.markdown("##### Type or speak your message:")
+    
+    # Voice and text input side-by-side
+    input_col1, input_col2 = st.columns([1, 9])
+    
+    with input_col1:
+        # Compact voice button
+        voice_text = speech_to_text(
+            language='en',
+            start_prompt="🎤 Voice",
+            stop_prompt="⏹️ Stop",
+            just_once=False,
+            use_container_width=True,
+            key=f'voice_input_{user_id}'
+        )
+    
+    # Process voice input immediately when received
+    if voice_text:
+        prompt = voice_text
+        is_voice = True
+    else:
+        prompt = None
+        is_voice = False
+    
+    # Chat text input (appears alongside voice button)
+    if text_prompt := st.chat_input(f"💬 Type your message here, {user.name}... (or use the voice button above)"):
+        prompt = text_prompt
+        is_voice = False
+    
+    # Process input (from either voice or text)
+    if prompt:
+        # Add user message to chat (with mic emoji for voice input)
+        display_message = f"🎤 {prompt}" if is_voice else prompt
+        
         with st.chat_message("user"):
-            st.write(prompt)
+            st.write(display_message)
         
         # Generate AI response
         with st.chat_message("assistant", avatar="🏥"):
@@ -380,7 +355,7 @@ def show_chat_interface(user_id: int):
                 st.caption(f"Detected mood: {sentiment_emoji} {response_data['sentiment_label']}")
         
         # Update session state
-        st.session_state.chat_history.append({"role": "user", "content": prompt, "timestamp": datetime.now()})
+        st.session_state.chat_history.append({"role": "user", "content": display_message, "timestamp": datetime.now()})
         st.session_state.chat_history.append({"role": "assistant", "content": response_data["response"], "timestamp": datetime.now()})
         
         # Check for emergency
