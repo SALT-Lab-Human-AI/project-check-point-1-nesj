@@ -1,0 +1,49 @@
+Goal
+
+When a user chats with Carely, detect emergency phrases (e.g., “chest pain”, “breathing trouble”). If detected, (1) calmly reassure the user and (2) send an urgent, formatted alert to the caregiver via Telegram Bot API using the caregiver’s chat_id.
+Detection
+Match any of these (case-insensitive, word-boundary):
+["chest pain", "breathing trouble", "shortness of breath", "can’t breathe", "cannot breathe", "difficulty breathing", "severe headache", "fainting", "unconscious", "heart attack", "stroke", "bleeding a lot", "suicidal"]
+If matched → set severity = "very_urgent", else manageable.
+Debounce: do not send >1 alert within 5 minutes for the same user unless the message contains “worsening” or “getting worse”.
+UI Flow (Chat with Carely)
+Show two options when an emergency phrase is detected:
+🔴 Notify Caregiver (very urgent)
+🟢 I feel OK (manageable)
+Alternative follow-ups: “Help is on the way” (after notifying) or “Are you feeling better?”
+“Return to chat” brings user back to normal conversation.
+User Reassurance (immediate)
+Before sending the alert:
+“I’m here with you. I’m notifying your caregiver now so help can reach you quickly. Try to sit comfortably and focus on slow breaths. You’re not alone.”
+ 
+ 
+Caregiver Telegram Message Format
+ 
+From: Carely (Emergency Alert)
+
+User: {user_full_name}
+
+💬 Reported Symptoms: {matched_phrase}
+
+⚠️ Severity: 🔴 Very Urgent
+ 
+Please take immediate action.
+
+Carely has started first-level comfort and monitoring responses for the user.
+ 
+Telegram Delivery
+Use Bot Token and Chat ID from secrets, not hardcoded.
+TELEGRAM_BOT_TOKEN
+TELEGRAM_CHAT_ID
+Endpoint: https://api.telegram.org/bot{TOKEN}/sendMessage
+Method: POST with chat_id, text, parse_mode="Markdown" (or none).
+Security
+Store the token/chat_id in Replit Secrets (🔑), not in code.
+Never log the token or full message text.
+ 
+How to wire your secrets in Replit
+Secrets (🔑) → add
+TELEGRAM_BOT_TOKEN = 7961050870:AAGsEaktsNpVcN3YViV3KqKL7qY4DG90Pz8
+TELEGRAM_CHAT_ID = 7200717892
+Do not hardcode tokens in the code
+ 
