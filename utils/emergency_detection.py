@@ -1,12 +1,12 @@
 import os
-from openai import OpenAI
+from groq import Groq
 from typing import Dict, Any
 import json
 
 class EmergencyDetector:
     def __init__(self):
-        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        self.model = "gpt-4o-mini"
+        self.client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+        self.model = "llama-3.1-70b-versatile"
         
     def detect_emergency(self, text: str) -> Dict[str, Any]:
         """
@@ -58,7 +58,7 @@ class EmergencyDetector:
                     }
                 ],
                 response_format={"type": "json_object"},
-                max_completion_tokens=200
+                max_tokens=200
             )
             
             content = response.choices[0].message.content or "{}"

@@ -2,7 +2,7 @@ import os
 import json
 from datetime import datetime, timedelta
 from typing import Dict, Any, List
-from openai import OpenAI
+from groq import Groq
 from app.database.crud import (ConversationCRUD, MedicationCRUD,
                                MedicationLogCRUD, CaregiverAlertCRUD, UserCRUD,
                                PersonalEventCRUD)
@@ -10,13 +10,11 @@ from utils.sentiment_analysis import analyze_sentiment
 from utils.emergency_detection import detect_emergency
 
 
-# the newest OpenAI model is "gpt-5" which was released August 7, 2025.
-# do not change this unless explicitly requested by the user
 class CompanionAgent:
 
     def __init__(self):
-        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        self.model = "gpt-5"  # Using latest model
+        self.client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+        self.model = "llama-3.1-70b-versatile"  # Using Groq model
 
         # System prompt for elderly care companion
         self.system_prompt = """You are Carely, a warm, empathetic AI companion designed specifically for elderly care. Your role is to:
@@ -218,7 +216,7 @@ Respond naturally and warmly."""
                     "role": "user",
                     "content": prompt
                 }],
-                max_completion_tokens=512)
+                max_tokens=512)
 
             ai_response = response.choices[0].message.content
 

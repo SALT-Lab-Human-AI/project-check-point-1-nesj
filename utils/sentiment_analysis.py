@@ -1,18 +1,16 @@
 import os
 import json
-from openai import OpenAI
+from groq import Groq
 from typing import Dict, Any
 
-# the newest OpenAI model is "gpt-5" which was released August 7, 2025.
-# do not change this unless explicitly requested by the user
 class SentimentAnalyzer:
     def __init__(self):
-        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        self.model = "gpt-5"  # Using latest model
+        self.client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+        self.model = "llama-3.1-70b-versatile"  # Using Groq model
     
     def analyze(self, text: str) -> Dict[str, Any]:
         """
-        Analyze sentiment of text using OpenAI GPT-5
+        Analyze sentiment of text using Groq LLM
         Returns: {
             "score": float (-1 to 1),
             "label": str ("positive", "negative", "neutral"),
@@ -54,7 +52,7 @@ class SentimentAnalyzer:
                     }
                 ],
                 response_format={"type": "json_object"},
-                max_completion_tokens=200
+                max_tokens=200
             )
             
             result = json.loads(response.choices[0].message.content)
