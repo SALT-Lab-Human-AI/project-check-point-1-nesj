@@ -4,6 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta, time
 import json
+import os
 from typing import List, Dict, Any
 from streamlit_mic_recorder import speech_to_text
 
@@ -191,7 +192,7 @@ def show_overview(user_id: int):
                 st.rerun()
 
 def show_emergency_safety_sheet(user_id: int, concerns: list, severity: str, message: str):
-    """Display emergency safety sheet with three-step flow"""
+    """Display emergency safety sheet with two-step flow"""
     user = UserCRUD.get_user(user_id)
     
     st.error("🚨 **EMERGENCY ALERT DETECTED**")
@@ -205,11 +206,11 @@ def show_emergency_safety_sheet(user_id: int, concerns: list, severity: str, mes
     col1, col2 = st.columns(2)
     
     with col1:
-        if st.button("📞 **Contact Caregiver**", use_container_width=True, type="primary"):
+        if st.button("🔴 **Notify Caregiver** (very urgent)", use_container_width=True, type="primary"):
             caregivers = CaregiverPatientCRUD.get_patient_caregivers(user_id)
+            alert_sent = False
             
             if caregivers:
-                alert_sent = False
                 for caregiver in caregivers:
                     if caregiver.telegram_chat_id:
                         result = send_emergency_alert(
@@ -221,23 +222,30 @@ def show_emergency_safety_sheet(user_id: int, concerns: list, severity: str, mes
                         )
                         if result.get("success"):
                             alert_sent = True
-                
-                if alert_sent:
-                    st.success("✅ **Help is on the way!**")
-                    st.info(f"Your caregiver has been notified via Telegram and will be with you shortly.")
-                    st.session_state.emergency_handled = True
-                else:
-                    st.warning("⚠️ We couldn't send the Telegram alert. Please call your caregiver directly.")
-                    if caregivers[0].phone:
-                        st.info(f"📞 Caregiver phone: {caregivers[0].phone}")
+            
+            if not alert_sent and os.getenv("TELEGRAM_CHAT_ID"):
+                result = send_emergency_alert(
+                    chat_id=os.getenv("TELEGRAM_CHAT_ID"),
+                    patient_name=user.name,
+                    concerns=concerns,
+                    severity=severity,
+                    message=message
+                )
+                if result.get("success"):
+                    alert_sent = True
+            
+            if alert_sent:
+                st.success("✅ **Help is on the way!**")
+                st.info("Your caregiver has been notified via Telegram and will be with you shortly.")
+                st.session_state.emergency_handled = True
             else:
-                st.warning("No caregiver assigned. Please contact emergency services if needed.")
+                st.warning("⚠️ We couldn't send the Telegram alert. Please call your caregiver directly.")
                 st.info("📞 Emergency: 911")
     
     with col2:
-        if st.button("✅ **I Feel OK**", use_container_width=True):
+        if st.button("🟢 **I feel OK** (manageable)", use_container_width=True):
             st.success("**Feeling better!**")
-            st.info("That's great to hear! If you need anything, I'm here for you.")
+            st.info("That's great to hear! Are you feeling better?")
             st.session_state.emergency_handled = True
     
     st.markdown("---")

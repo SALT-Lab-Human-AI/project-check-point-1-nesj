@@ -180,11 +180,17 @@ Always respond with empathy and care, as if you're genuinely concerned about the
             sentiment_score = sentiment_result.get("score", 0)
             sentiment_label = sentiment_result.get("label", "neutral")
             
-            # Detect emergency situations
-            emergency_result = detect_emergency(user_message)
+            # Detect emergency situations with user_id for debounce tracking
+            emergency_result = detect_emergency(user_message, user_id)
             is_emergency = emergency_result.get("is_emergency", False)
-            emergency_severity = emergency_result.get("severity", "low")
+            emergency_severity = emergency_result.get("severity", "manageable")
             emergency_concerns = emergency_result.get("concerns", [])
+            should_alert = emergency_result.get("should_alert", False)
+            
+            # If emergency detected, prepare reassurance message
+            emergency_context = ""
+            if is_emergency:
+                emergency_context = "\nIMPORTANT: The user is experiencing emergency symptoms. Provide immediate reassurance and comfort."
 
             # Build the prompt
             prompt = f"""Context: {context}
@@ -193,7 +199,7 @@ Always respond with empathy and care, as if you're genuinely concerned about the
 
 User's name: {user_name}
 Conversation type: {conversation_type}
-Current message: {user_message}
+Current message: {user_message}{emergency_context}
 
 Please respond as Carely, keeping in mind:
 - This person's conversation history
@@ -203,6 +209,7 @@ Please respond as Carely, keeping in mind:
 - If they mention medications, offer to help log them
 - If they seem distressed, offer appropriate support
 - Reference their upcoming events naturally when relevant (e.g., "How are you feeling about your grandson's birthday coming up?")
+- If this is an emergency situation, provide immediate reassurance and comfort
 
 Respond naturally and warmly."""
 
@@ -219,6 +226,11 @@ Respond naturally and warmly."""
                 max_tokens=512)
 
             ai_response = response.choices[0].message.content
+            
+            # If emergency, prepend reassurance message
+            if is_emergency:
+                reassurance = "I'm here with you. I'm notifying your caregiver now so help can reach you quickly. Try to sit comfortably and focus on slow breaths. You're not alone.\n\n"
+                ai_response = reassurance + ai_response
 
             # Save conversation
             conversation = ConversationCRUD.save_conversation(
@@ -249,7 +261,8 @@ Respond naturally and warmly."""
                 "conversation_id": conversation.id,
                 "is_emergency": is_emergency,
                 "emergency_severity": emergency_severity,
-                "emergency_concerns": emergency_concerns
+                "emergency_concerns": emergency_concerns,
+                "should_alert": should_alert
             }
 
         except Exception as e:

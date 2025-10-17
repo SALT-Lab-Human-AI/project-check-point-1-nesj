@@ -59,35 +59,23 @@ class TelegramNotifier:
             chat_id: Caregiver's Telegram chat ID
             patient_name: Name of the patient
             concerns: List of health concerns detected
-            severity: Severity level (low, medium, high)
+            severity: Severity level (very_urgent or manageable)
             message: Original message from patient
             
         Returns:
             Response from Telegram API
         """
-        severity_emoji = {
-            "high": "🚨",
-            "medium": "⚠️",
-            "low": "ℹ️"
-        }
-        
-        emoji = severity_emoji.get(severity, "ℹ️")
-        concerns_text = "\n".join([f"• {c}" for c in concerns])
+        matched_phrase = ", ".join(concerns) if concerns else "Unknown symptoms"
+        severity_display = "🔴 Very Urgent" if severity == "very_urgent" else "⚠️ Manageable"
         
         alert_message = f"""
-{emoji} <b>EMERGENCY ALERT - {severity.upper()} PRIORITY</b> {emoji}
+<b>From: Carely (Emergency Alert)</b>
+<b>User:</b> {patient_name}
+💬 <b>Reported Symptoms:</b> {matched_phrase}
+⚠️ <b>Severity:</b> {severity_display}
 
-<b>Patient:</b> {patient_name}
-
-<b>Health Concerns Detected:</b>
-{concerns_text}
-
-<b>Original Message:</b>
-"{message}"
-
-<b>Time:</b> {self._get_current_time()}
-
-⚡ Please check on the patient immediately!
+Please take immediate action.
+Carely has started first-level comfort and monitoring responses for the user.
 """
         
         return self.send_message(chat_id, alert_message, parse_mode="HTML")
