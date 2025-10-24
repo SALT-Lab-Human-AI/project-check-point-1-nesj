@@ -16,6 +16,8 @@ from sqlmodel import SQLModel, Field, Session, select
 
 class DailySummary(SQLModel, table=True):
     """Store daily conversation summaries"""
+    __table_args__ = {"extend_existing": True}
+    
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="user.id")
     date: datetime

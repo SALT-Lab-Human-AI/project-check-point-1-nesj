@@ -8,6 +8,8 @@ DATABASE_URL = "sqlite:///carely.db"
 engine = create_engine(DATABASE_URL, echo=False)
 
 class User(SQLModel, table=True):
+    __table_args__ = {"extend_existing": True}
+    
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     email: Optional[str] = None
@@ -20,6 +22,8 @@ class User(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.now)
 
 class Medication(SQLModel, table=True):
+    __table_args__ = {"extend_existing": True}
+    
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="user.id")
     name: str
@@ -31,6 +35,8 @@ class Medication(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.now)
 
 class Conversation(SQLModel, table=True):
+    __table_args__ = {"extend_existing": True}
+    
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="user.id")
     message: str
@@ -41,6 +47,8 @@ class Conversation(SQLModel, table=True):
     timestamp: datetime = Field(default_factory=datetime.now)
 
 class Reminder(SQLModel, table=True):
+    __table_args__ = {"extend_existing": True}
+    
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="user.id")
     reminder_type: str  # medication, checkin, alert
@@ -53,6 +61,8 @@ class Reminder(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.now)
 
 class MedicationLog(SQLModel, table=True):
+    __table_args__ = {"extend_existing": True}
+    
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="user.id")
     medication_id: int = Field(foreign_key="medication.id")
@@ -63,6 +73,8 @@ class MedicationLog(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.now)
 
 class CaregiverAlert(SQLModel, table=True):
+    __table_args__ = {"extend_existing": True}
+    
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="user.id")
     alert_type: str  # medication_missed, mood_concern, emergency
@@ -74,6 +86,8 @@ class CaregiverAlert(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.now)
 
 class CaregiverPatientAssignment(SQLModel, table=True):
+    __table_args__ = {"extend_existing": True}
+    
     id: Optional[int] = Field(default=None, primary_key=True)
     caregiver_id: int = Field(foreign_key="user.id")
     patient_id: int = Field(foreign_key="user.id")
@@ -82,6 +96,8 @@ class CaregiverPatientAssignment(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.now)
 
 class PersonalEvent(SQLModel, table=True):
+    __table_args__ = {"extend_existing": True}
+    
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="user.id")
     event_type: str  # birthday, appointment, family_event, hobby, achievement
