@@ -2,6 +2,7 @@ from sqlmodel import SQLModel, Field, create_engine, Session
 from datetime import datetime, time
 from typing import Optional, List
 import sqlite3
+from utils.timezone_utils import now_central
 
 # Database setup
 DATABASE_URL = "sqlite:///carely.db"
@@ -19,7 +20,7 @@ class User(SQLModel, table=True):
     telegram_chat_id: Optional[str] = None  # Telegram chat ID for notifications
     user_type: str = Field(default="patient")  # patient, caregiver, admin
     password_hash: Optional[str] = None
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=now_central)
 
 class Medication(SQLModel, table=True):
     __table_args__ = {"extend_existing": True}
@@ -32,7 +33,7 @@ class Medication(SQLModel, table=True):
     schedule_times: str  # JSON string of times like ["09:00", "21:00"]
     instructions: Optional[str] = None
     active: bool = Field(default=True)
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=now_central)
 
 class Conversation(SQLModel, table=True):
     __table_args__ = {"extend_existing": True}
@@ -44,7 +45,7 @@ class Conversation(SQLModel, table=True):
     sentiment_score: Optional[float] = None  # -1 to 1 scale
     sentiment_label: Optional[str] = None  # positive, negative, neutral
     conversation_type: str = Field(default="general")  # general, checkin, medication
-    timestamp: datetime = Field(default_factory=datetime.now)
+    timestamp: datetime = Field(default_factory=now_central)
 
 class Reminder(SQLModel, table=True):
     __table_args__ = {"extend_existing": True}
@@ -58,7 +59,7 @@ class Reminder(SQLModel, table=True):
     completed: bool = Field(default=False)
     completed_at: Optional[datetime] = None
     medication_id: Optional[int] = Field(default=None, foreign_key="medication.id")
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=now_central)
 
 class MedicationLog(SQLModel, table=True):
     __table_args__ = {"extend_existing": True}
@@ -70,7 +71,7 @@ class MedicationLog(SQLModel, table=True):
     taken_time: Optional[datetime] = None
     status: str = Field(default="pending")  # pending, taken, missed, skipped
     notes: Optional[str] = None
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=now_central)
 
 class CaregiverAlert(SQLModel, table=True):
     __table_args__ = {"extend_existing": True}
@@ -83,7 +84,7 @@ class CaregiverAlert(SQLModel, table=True):
     description: str
     resolved: bool = Field(default=False)
     resolved_at: Optional[datetime] = None
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=now_central)
 
 class CaregiverPatientAssignment(SQLModel, table=True):
     __table_args__ = {"extend_existing": True}
@@ -93,7 +94,7 @@ class CaregiverPatientAssignment(SQLModel, table=True):
     patient_id: int = Field(foreign_key="user.id")
     relationship: Optional[str] = None  # family, professional, friend
     notification_preferences: Optional[str] = None  # JSON string
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=now_central)
 
 class PersonalEvent(SQLModel, table=True):
     __table_args__ = {"extend_existing": True}
@@ -106,7 +107,7 @@ class PersonalEvent(SQLModel, table=True):
     event_date: Optional[datetime] = None
     recurring: bool = Field(default=False)
     importance: str = Field(default="medium")  # low, medium, high
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=now_central)
 
 def create_tables():
     """Create all database tables"""

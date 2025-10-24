@@ -11,6 +11,7 @@ from app.database.crud import (
     CaregiverAlertCRUD, UserCRUD, PersonalEventCRUD
 )
 from app.agents.companion_agent import CompanionAgent
+from utils.timezone_utils import now_central, CENTRAL_TZ, to_central
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -58,29 +59,29 @@ class ReminderScheduler:
             logger.info("Reminder scheduler stopped")
     
     def schedule_daily_checkins(self):
-        """Schedule daily check-ins at fixed times"""
-        # Morning check-in at 9:00 AM
+        """Schedule daily check-ins at fixed times in Central Time"""
+        # Morning check-in at 9:00 AM Central Time
         self.scheduler.add_job(
             func=self.morning_checkin,
-            trigger=CronTrigger(hour=9, minute=0),
+            trigger=CronTrigger(hour=9, minute=0, timezone=CENTRAL_TZ),
             id='morning_checkin',
             name='Morning Check-in',
             replace_existing=True
         )
         
-        # Afternoon check-in at 2:00 PM
+        # Afternoon check-in at 2:00 PM Central Time
         self.scheduler.add_job(
             func=self.afternoon_checkin,
-            trigger=CronTrigger(hour=14, minute=0),
+            trigger=CronTrigger(hour=14, minute=0, timezone=CENTRAL_TZ),
             id='afternoon_checkin',
             name='Afternoon Check-in',
             replace_existing=True
         )
         
-        # Evening check-in at 7:00 PM
+        # Evening check-in at 7:00 PM Central Time
         self.scheduler.add_job(
             func=self.evening_checkin,
-            trigger=CronTrigger(hour=19, minute=0),
+            trigger=CronTrigger(hour=19, minute=0, timezone=CENTRAL_TZ),
             id='evening_checkin',
             name='Evening Check-in',
             replace_existing=True
@@ -111,7 +112,7 @@ class ReminderScheduler:
                             
                             self.scheduler.add_job(
                                 func=self.medication_reminder,
-                                trigger=CronTrigger(hour=hour, minute=minute),
+                                trigger=CronTrigger(hour=hour, minute=minute, timezone=CENTRAL_TZ),
                                 args=[user.id, medication.id],
                                 id=job_id,
                                 name=f'Medication reminder for {medication.name}',
@@ -141,10 +142,11 @@ class ReminderScheduler:
                         continue
                     
                     # Schedule reminder 1 hour before appointment
-                    reminder_time = appointment.event_date - timedelta(hours=1)
+                    appt_time = to_central(appointment.event_date)
+                    reminder_time = appt_time - timedelta(hours=1)
                     
                     # Only schedule if reminder time is in the future
-                    if reminder_time > datetime.now():
+                    if reminder_time > now_central():
                         job_id = f'appointment_reminder_{appointment.id}'
                         
                         self.scheduler.add_job(
@@ -186,7 +188,7 @@ class ReminderScheduler:
                 reminder_type="appointment",
                 title=f"Upcoming: {appointment.title}",
                 message=reminder_message,
-                scheduled_time=datetime.now()
+                scheduled_time=now_central()
             )
             
             logger.info(f"Appointment reminder sent for {appointment.title} to user {user_id}")
@@ -233,7 +235,7 @@ class ReminderScheduler:
                     reminder_type="checkin",
                     title="Morning Check-in",
                     message=checkin["prompt"],
-                    scheduled_time=datetime.now()
+                    scheduled_time=now_central()
                 )
             
             logger.info(f"Morning check-in completed for {len(users)} users")
@@ -254,7 +256,7 @@ class ReminderScheduler:
                     reminder_type="checkin",
                     title="Afternoon Check-in",
                     message=checkin["prompt"],
-                    scheduled_time=datetime.now()
+                    scheduled_time=now_central()
                 )
             
             logger.info(f"Afternoon check-in completed for {len(users)} users")
@@ -275,7 +277,7 @@ class ReminderScheduler:
                     reminder_type="checkin",
                     title="Evening Check-in",
                     message=checkin["prompt"],
-                    scheduled_time=datetime.now()
+                    scheduled_time=now_central()
                 )
             
             logger.info(f"Evening check-in completed for {len(users)} users")
@@ -304,7 +306,7 @@ class ReminderScheduler:
                 reminder_type="medication",
                 title=f"Time for {medication.name}",
                 message=reminder_message,
-                scheduled_time=datetime.now(),
+                scheduled_time=now_central(),
                 medication_id=medication_id
             )
             
@@ -317,7 +319,7 @@ class ReminderScheduler:
         """Check for missed medications and create alerts"""
         try:
             users = UserCRUD.get_all_users()
-            current_time = datetime.now()
+            current_time = now_central()
             
             for user in users:
                 # Get medication adherence for last 24 hours

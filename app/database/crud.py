@@ -1,5 +1,6 @@
 from sqlmodel import Session, select
 from datetime import datetime, timedelta
+from utils.timezone_utils import now_central, start_of_day_central
 from typing import List, Optional
 import json
 from app.database.models import (
@@ -120,7 +121,7 @@ class ConversationCRUD:
     def get_recent_sentiment_data(user_id: int, days: int = 7) -> List[Conversation]:
         """Get recent conversations with sentiment data"""
         with get_session() as session:
-            cutoff_date = datetime.now() - timedelta(days=days)
+            cutoff_date = now_central() - timedelta(days=days)
             query = select(Conversation).where(
                 Conversation.user_id == user_id,
                 Conversation.timestamp >= cutoff_date,
@@ -153,7 +154,7 @@ class ReminderCRUD:
         with get_session() as session:
             query = select(Reminder).where(
                 Reminder.completed == False,
-                Reminder.scheduled_time <= datetime.now()
+                Reminder.scheduled_time <= now_central()
             )
             if user_id:
                 query = query.where(Reminder.user_id == user_id)
@@ -166,7 +167,7 @@ class ReminderCRUD:
             reminder = session.get(Reminder, reminder_id)
             if reminder:
                 reminder.completed = True
-                reminder.completed_at = datetime.now()
+                reminder.completed_at = now_central()
                 session.add(reminder)
                 session.commit()
                 session.refresh(reminder)
@@ -183,7 +184,7 @@ class MedicationLogCRUD:
                 user_id=user_id,
                 medication_id=medication_id,
                 scheduled_time=scheduled_time,
-                taken_time=taken_time or datetime.now(),
+                taken_time=taken_time or now_central(),
                 status=status,
                 notes=notes
             )
@@ -196,7 +197,7 @@ class MedicationLogCRUD:
     def get_medication_adherence(user_id: int, days: int = 7) -> dict:
         """Get medication adherence statistics"""
         with get_session() as session:
-            cutoff_date = datetime.now() - timedelta(days=days)
+            cutoff_date = now_central() - timedelta(days=days)
             query = select(MedicationLog).where(
                 MedicationLog.user_id == user_id,
                 MedicationLog.scheduled_time >= cutoff_date
@@ -219,7 +220,7 @@ class MedicationLogCRUD:
     def check_recent_medication_log(user_id: int, medication_id: int, hours: int = 24) -> Optional[MedicationLog]:
         """Check if medication was logged recently (for duplicate detection)"""
         with get_session() as session:
-            cutoff_time = datetime.now() - timedelta(hours=hours)
+            cutoff_time = now_central() - timedelta(hours=hours)
             query = select(MedicationLog).where(
                 MedicationLog.user_id == user_id,
                 MedicationLog.medication_id == medication_id,
@@ -232,7 +233,7 @@ class MedicationLogCRUD:
     def get_today_medication_logs(user_id: int, medication_id: int) -> List[MedicationLog]:
         """Get all medication logs for today"""
         with get_session() as session:
-            today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+            today_start = start_of_day_central()
             query = select(MedicationLog).where(
                 MedicationLog.user_id == user_id,
                 MedicationLog.medication_id == medication_id,
@@ -275,7 +276,7 @@ class CaregiverAlertCRUD:
             alert = session.get(CaregiverAlert, alert_id)
             if alert:
                 alert.resolved = True
-                alert.resolved_at = datetime.now()
+                alert.resolved_at = now_central()
                 session.add(alert)
                 session.commit()
                 session.refresh(alert)
@@ -379,12 +380,12 @@ class PersonalEventCRUD:
     def get_upcoming_events(user_id: int, days: int = 30) -> List[PersonalEvent]:
         """Get upcoming events in the next N days"""
         with get_session() as session:
-            future_date = datetime.now() + timedelta(days=days)
+            future_date = now_central() + timedelta(days=days)
             query = select(PersonalEvent).where(
                 PersonalEvent.user_id == user_id,
                 PersonalEvent.event_date.isnot(None),
                 PersonalEvent.event_date <= future_date,
-                PersonalEvent.event_date >= datetime.now()
+                PersonalEvent.event_date >= now_central()
             ).order_by(PersonalEvent.event_date)
             return session.exec(query).all()
     
