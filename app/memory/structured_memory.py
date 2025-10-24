@@ -234,4 +234,24 @@ class StructuredMemory:
             for med in medications:
                 profile += f"  • {med.name} - {med.dosage}\n"
         
+        # Add upcoming personal events
+        upcoming_events = PersonalEventCRUD.get_upcoming_events(user_id, days=30)
+        if upcoming_events:
+            profile += f"\nUpcoming Events and Important Dates:\n"
+            for event in upcoming_events[:10]:  # Show up to 10 upcoming events
+                days_until = (event.event_date.date() - now_central().date()).days
+                if days_until == 0:
+                    time_desc = "TODAY"
+                elif days_until == 1:
+                    time_desc = "TOMORROW"
+                elif days_until < 7:
+                    time_desc = f"in {days_until} days"
+                else:
+                    time_desc = event.event_date.strftime('%B %d, %Y')
+                
+                profile += f"  • {event.title} ({event.event_type}) - {time_desc}"
+                if event.description:
+                    profile += f" - {event.description}"
+                profile += "\n"
+        
         return profile
