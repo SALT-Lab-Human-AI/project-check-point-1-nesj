@@ -1,0 +1,65 @@
+Enhance the Carely chatbot by adding a multi-layer memory system that makes conversations more personal, contextual, and adaptive.
+
+Use only free, open-source tools for all layers — no paid APIs or hosted services.
+ 
+1. Short-Term Memory
+Implement a simple conversation buffer to retain the last 10–15 exchanges for immediate context.
+Use in-memory storage (e.g., Python list, deque, or a lightweight local cache).
+This ensures smooth and coherent dialogue flow without relying on any external API.
+ 
+2. Long-Term Memory
+Create a local vector-based retrieval system for recalling relevant past conversations.
+Use sentence-transformers (like all-MiniLM-L6-v2 or bge-small-en) for generating free embeddings.
+Store embeddings in a local database such as FAISS or Chroma (self-hosted mode) — both free and open source.
+Retrieve semantically similar memories when the user brings up related topics.
+ 
+3. Structured Memory
+Use SQLite with SQLModel to store structured user data, including:
+medications: name, dosage, timing
+user_profiles: preferences, routines, family info
+health_data: key health facts or conditions
+Allow the chatbot to query this structured memory for precise, factual responses — such as medication schedules or daily habits.
+For example, it should be able to accurately answer the questions like :
+
+what medications do I take? Do you remember what we chatted about earlier? could you remind me what did I have for breakfast? Remind me my medication schedule?
+ 
+4. Episodic Memory
+Generate daily summaries of important interactions (topics, mood, health updates).
+Summaries can be created using a free local summarization model such as T5-small or BART-base from Hugging Face Transformers.
+Store each summary locally with a timestamp to identify long-term patterns like mood trends or medication adherence.
+ 
+Integration and Behavior
+Combine all four layers into a unified memory manager:
+Short-term → keeps immediate dialogue context.
+Long-term → retrieves semantically related past conversations.
+Structured → holds factual, queryable data.
+Episodic → tracks daily summaries and long-range insights.
+Ensure all layers work locally and can run efficiently on free Replit or local environments.
+Keep the system modular — each layer should function independently and be easy to extend or replace later.
+ 
+Goal
+ 
+Add these specific features:
+Persistent Memory Storage
+Intelligent Memory Retrieval
+Function to recall medication schedules when asked
+Ability to summarize recent conversations from history
+Retrieve specific daily logs (like breakfast)
+Access user preferences and routines
+Context-Aware Responses
+Check database before answering personal questions
+Reference past conversations when users ask "remember what we talked about?"
+Provide accurate medication info from stored data
+Recall daily activities from logs
+Memory Initialization & Updates
+Setup prompts to collect initial medication schedules
+Functions to update medication info when changed
+Automatic logging of daily check-ins and meals
+Ability to learn and store new personal preferences
+
+Make Carely capable of:
+Remembering both short-term and long-term context,
+Using structured data for accuracy,
+Summarizing key events for emotional continuity, and
+Operating fully on free, local, open-source technologies — no API costs or dependencies on paid services.
+ 

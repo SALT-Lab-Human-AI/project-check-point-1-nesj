@@ -8,6 +8,7 @@ from app.database.crud import (ConversationCRUD, MedicationCRUD,
                                PersonalEventCRUD)
 from utils.sentiment_analysis import analyze_sentiment
 from utils.emergency_detection import detect_emergency
+from app.memory.memory_manager import MemoryManager
 
 
 class CompanionAgent:
@@ -15,6 +16,7 @@ class CompanionAgent:
     def __init__(self):
         self.client = Groq(api_key=os.getenv("GROQ_API_KEY"))
         self.model = "llama-3.3-70b-versatile"  # Using Groq model
+        self.memory_manager = MemoryManager()  # Initialize memory system
 
         # System prompt for elderly care companion
         self.system_prompt = """You are Carely, a warm, empathetic AI companion designed specifically for elderly care. Your role is to:
@@ -296,13 +298,40 @@ Always respond with empathy and care, as if you're genuinely concerned about the
             user_id: int,
             user_message: str,
             conversation_type: str = "general") -> Dict[str, Any]:
-        """Generate AI response with context and tools"""
+        """Generate AI response with context and tools using memory system"""
         try:
-            # Get conversation context
-            context = self.get_conversation_context(user_id)
-
-            # Get personal events context
-            events_context = self.get_personal_events_context(user_id)
+            # Check if this is a memory-specific query
+            memory_query_keywords = ['remember', 'talked about', 'medication schedule', 
+                                   'breakfast', 'lunch', 'dinner', 'meal', 
+                                   'yesterday', 'summary', 'discussed']
+            is_memory_query = any(keyword in user_message.lower() for keyword in memory_query_keywords)
+            
+            # Use memory manager for memory-specific queries
+            if is_memory_query:
+                memory_response = self.memory_manager.recall_information(user_id, user_message)
+                if memory_response and len(memory_response) > 20:
+                    # Save this interaction to memory
+                    self.memory_manager.add_conversation(user_id, user_message, memory_response)
+                    
+                    # Save to database
+                    ConversationCRUD.save_conversation(
+                        user_id=user_id,
+                        message=user_message,
+                        response=memory_response,
+                        conversation_type="memory_query"
+                    )
+                    
+                    return {
+                        "response": memory_response,
+                        "sentiment_score": 0.5,
+                        "sentiment_label": "helpful",
+                        "alert_sent": False,
+                        "quick_actions": [],
+                        "is_emergency": False
+                    }
+            
+            # Get full context from all memory layers
+            memory_context = self.memory_manager.get_full_context(user_id, user_message)
 
             # Get user info
             user = UserCRUD.get_user(user_id)
@@ -325,26 +354,24 @@ Always respond with empathy and care, as if you're genuinely concerned about the
             if is_emergency:
                 emergency_context = "\nIMPORTANT: The user is experiencing emergency symptoms. Provide immediate reassurance and comfort."
 
-            # Build the prompt
-            prompt = f"""Context: {context}
-
-{events_context}
+            # Build the prompt with comprehensive memory context
+            prompt = f"""{memory_context}
 
 User's name: {user_name}
 Conversation type: {conversation_type}
 Current message: {user_message}{emergency_context}
 
 Please respond as Carely, keeping in mind:
-- This person's conversation history
-- Their upcoming events and important dates
-- The type of conversation (general chat, check-in, etc.)
+- The user's profile, medications, and preferences from the context above
+- Recent conversation history and past relevant conversations
+- Daily summaries and patterns
 - Be warm, caring, and supportive
-- If they mention medications, offer to help log them
-- If they seem distressed, offer appropriate support
-- Reference their upcoming events naturally when relevant (e.g., "How are you feeling about your grandson's birthday coming up?")
+- If they ask about medications, reference their actual schedule
+- If they ask about past conversations, use the relevant past conversations provided
+- Reference their personal information naturally when relevant
 - If this is an emergency situation, provide immediate reassurance and comfort
 
-Respond naturally and warmly."""
+Respond naturally and warmly based on ALL the context provided."""
 
             # Generate response
             response = self.client.chat.completions.create(
@@ -365,7 +392,7 @@ Respond naturally and warmly."""
                 reassurance = "I'm here with you. I'm notifying your caregiver now so help can reach you quickly. Try to sit comfortably and focus on slow breaths. You're not alone.\n\n"
                 ai_response = reassurance + ai_response
 
-            # Save conversation
+            # Save conversation to database
             conversation = ConversationCRUD.save_conversation(
                 user_id=user_id,
                 message=user_message,
@@ -373,6 +400,14 @@ Respond naturally and warmly."""
                 sentiment_score=sentiment_score,
                 sentiment_label=sentiment_label,
                 conversation_type=conversation_type)
+            
+            # Add conversation to memory system
+            self.memory_manager.add_conversation(
+                user_id=user_id,
+                user_message=user_message,
+                assistant_response=ai_response,
+                timestamp=conversation.timestamp
+            )
 
             # Check if caregiver alert is needed
             alert_sent = False
