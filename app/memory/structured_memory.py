@@ -1,3 +1,4 @@
+from utils.timezone_utils import now_central
 """
 Structured memory helper for querying factual user data
 Provides easy access to medications, preferences, health data, and daily logs
@@ -96,7 +97,7 @@ class StructuredMemory:
             Dictionary with daily logs
         """
         if date is None:
-            date = datetime.now()
+            date = now_central()
         
         day_start = date.replace(hour=0, minute=0, second=0, microsecond=0)
         day_end = day_start + timedelta(days=1)

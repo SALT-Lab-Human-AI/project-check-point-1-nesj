@@ -1,3 +1,4 @@
+from utils.timezone_utils import now_central
 import os
 import requests
 from typing import Dict, Any, Optional
@@ -83,7 +84,7 @@ Carely has started first-level comfort and monitoring responses for the user.
     def _get_current_time(self) -> str:
         """Get current time in readable format"""
         from datetime import datetime
-        return datetime.now().strftime("%I:%M %p, %B %d, %Y")
+        return now_central().strftime("%I:%M %p, %B %d, %Y")
 
 def send_emergency_alert(
     chat_id: str,

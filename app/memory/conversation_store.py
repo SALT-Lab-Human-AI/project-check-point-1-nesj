@@ -1,3 +1,4 @@
+from utils.timezone_utils import now_central
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
 import json
@@ -20,7 +21,7 @@ class ConversationMemoryStore:
         )
         
         # Filter by date
-        cutoff_date = datetime.now() - timedelta(days=days)
+        cutoff_date = now_central() - timedelta(days=days)
         recent_convs = [
             conv for conv in conversations 
             if conv.timestamp >= cutoff_date

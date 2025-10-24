@@ -1,3 +1,4 @@
+from utils.timezone_utils import now_central
 import os
 from groq import Groq
 from typing import Dict, Any
@@ -51,7 +52,7 @@ class EmergencyDetector:
         if last_alert is None:
             return True
         
-        time_since_last = datetime.now() - last_alert
+        time_since_last = now_central() - last_alert
         return time_since_last > timedelta(minutes=self.DEBOUNCE_MINUTES)
     
     def detect_emergency(self, text: str, user_id: int = None) -> Dict[str, Any]:
@@ -76,7 +77,7 @@ class EmergencyDetector:
         if is_emergency and user_id is not None:
             should_alert = self._should_send_alert(user_id, is_worsening)
             if should_alert:
-                self._last_alert_times[user_id] = datetime.now()
+                self._last_alert_times[user_id] = now_central()
         
         return {
             "is_emergency": is_emergency,
@@ -89,7 +90,7 @@ class EmergencyDetector:
     
     def mark_alert_sent(self, user_id: int):
         """Mark that an alert was sent for this user (for debounce tracking)"""
-        self._last_alert_times[user_id] = datetime.now()
+        self._last_alert_times[user_id] = now_central()
 
 def detect_emergency(text: str, user_id: int = None) -> Dict[str, Any]:
     """Helper function to detect emergency in text"""

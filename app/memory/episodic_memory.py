@@ -6,6 +6,7 @@ Uses extractive summarization without external APIs
 import json
 from typing import List, Dict, Optional
 from datetime import datetime, timedelta
+from utils.timezone_utils import now_central, start_of_day_central
 from collections import Counter
 import re
 
@@ -26,7 +27,7 @@ class DailySummary(SQLModel, table=True):
     mood_average: Optional[float] = None
     total_conversations: int = Field(default=0)
     medications_logged: int = Field(default=0)
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=now_central)
 
 
 class EpisodicMemory:
@@ -53,10 +54,10 @@ class EpisodicMemory:
             DailySummary object or None
         """
         if date is None:
-            date = datetime.now()
+            date = now_central()
         
         # Get start and end of day
-        day_start = date.replace(hour=0, minute=0, second=0, microsecond=0)
+        day_start = start_of_day_central(date)
         day_end = day_start + timedelta(days=1)
         
         # Get all conversations for the day
@@ -147,9 +148,9 @@ class EpisodicMemory:
             DailySummary object or None
         """
         if date is None:
-            date = datetime.now()
+            date = now_central()
         
-        day_start = date.replace(hour=0, minute=0, second=0, microsecond=0)
+        day_start = start_of_day_central(date)
         day_end = day_start + timedelta(days=1)
         
         with get_session() as session:
@@ -171,7 +172,7 @@ class EpisodicMemory:
         Returns:
             List of DailySummary objects
         """
-        cutoff_date = datetime.now() - timedelta(days=days)
+        cutoff_date = now_central() - timedelta(days=days)
         
         with get_session() as session:
             query = select(DailySummary).where(

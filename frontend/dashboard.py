@@ -16,6 +16,13 @@ from app.agents.companion_agent import CompanionAgent
 from utils.sentiment_analysis import analyze_sentiment, get_sentiment_emoji, get_sentiment_color
 from utils.telegram_notification import send_emergency_alert
 from utils.tts_helper import generate_speech_audio
+from utils.timezone_utils import format_central_time, to_central, now_central
+
+def format_time_central(dt: datetime, format_str: str = "%I:%M %p %Z") -> str:
+    """Format datetime in Central Time for display"""
+    if dt is None:
+        return "N/A"
+    return format_central_time(dt, format_str)
 
 def run_dashboard():
     """Main dashboard function"""
@@ -129,7 +136,7 @@ def show_overview(user_id: int):
         if today_reminders:
             for reminder in today_reminders[:5]:
                 with st.container():
-                    st.write(f"**{reminder.scheduled_time.strftime('%I:%M %p')}** - {reminder.title}")
+                    st.write(f"**{format_time_central(reminder.scheduled_time, "%I:%M %p")}** - {reminder.title}")
                     st.write(f"_{reminder.message}_")
                     st.divider()
         else:
@@ -147,7 +154,7 @@ def show_overview(user_id: int):
                     sentiment_color = get_sentiment_color(conv.sentiment_score or 0)
                     sentiment_emoji = get_sentiment_emoji(conv.sentiment_score or 0)
                     
-                    st.write(f"**{conv.timestamp.strftime('%I:%M %p')}** {sentiment_emoji}")
+                    st.write(f"**{format_time_central(conv.timestamp, "%I:%M %p")}** {sentiment_emoji}")
                     st.write(f"You: {conv.message}")
                     st.write(f"Carely: {conv.response}")
                     st.divider()
@@ -618,7 +625,7 @@ def show_medication_management(user_id: int):
                         st.write("**Recent Activity:**")
                         for log in med_logs[-3:]:  # Last 3 logs
                             status_emoji = "✅" if log.status == "taken" else "❌" if log.status == "missed" else "⏸️"
-                            st.write(f"{status_emoji} {log.scheduled_time.strftime('%m/%d %I:%M %p')} - {log.status}")
+                            st.write(f"{status_emoji} {format_time_central(log.scheduled_time, "%m/%d %I:%M %p")} - {log.status}")
                     
                     # Quick log button
                     if st.button(f"Log {med.name} as Taken", key=f"log_{med.id}"):
@@ -845,7 +852,7 @@ def show_health_insights(user_id: int):
         df_med = pd.DataFrame([
             {
                 "date": log.scheduled_time.date(),
-                "day_of_week": log.scheduled_time.strftime("%A"),
+                "day_of_week": format_time_central(log.scheduled_time, "%A"),
                 "status": log.status,
                 "hour": log.scheduled_time.hour
             }
@@ -972,7 +979,7 @@ def show_alerts_and_reminders(user_id: int):
                         st.info(f"🟢 **{alert.title}**")
                     
                     st.write(alert.description)
-                    st.caption(f"Created: {alert.created_at.strftime('%m/%d/%Y %I:%M %p')} | Type: {alert.alert_type}")
+                    st.caption(f"Created: {format_time_central(alert.created_at, "%m/%d/%Y %I:%M %p")} | Type: {alert.alert_type}")
                     
                     col1, col2 = st.columns([1, 1])
                     with col1:
@@ -1022,7 +1029,7 @@ def show_user_management():
                     st.write(f"**Emergency Contact:** {user.emergency_contact or 'Not provided'}")
                 
                 with col2:
-                    st.write(f"**Created:** {user.created_at.strftime('%m/%d/%Y')}")
+                    st.write(f"**Created:** {format_time_central(user.created_at, "%m/%d/%Y")}")
                     if user.preferences:
                         try:
                             prefs = json.loads(user.preferences)
@@ -1036,7 +1043,7 @@ def show_user_management():
                     conversations = ConversationCRUD.get_user_conversations(user.id, limit=1)
                     medications = MedicationCRUD.get_user_medications(user.id)
                     st.write(f"**Medications:** {len(medications)}")
-                    st.write(f"**Last Chat:** {conversations[0].timestamp.strftime('%m/%d/%Y') if conversations else 'Never'}")
+                    st.write(f"**Last Chat:** {format_time_central(conversations[0].timestamp, "%m/%d/%Y") if conversations else 'Never'}")
     
     st.divider()
     

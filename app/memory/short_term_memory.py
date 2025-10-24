@@ -1,3 +1,4 @@
+from utils.timezone_utils import now_central
 """
 Short-term memory buffer for immediate conversation context
 Uses in-memory deque to retain last 10-15 exchanges
@@ -25,7 +26,7 @@ class ShortTermMemory:
                     timestamp: datetime = None):
         """Add a conversation exchange to the buffer"""
         if timestamp is None:
-            timestamp = datetime.now()
+            timestamp = now_central()
         
         exchange = {
             "user_message": user_message,

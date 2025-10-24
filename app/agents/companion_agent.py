@@ -1,6 +1,7 @@
 import os
 import json
 from datetime import datetime, timedelta
+from utils.timezone_utils import now_central, to_central
 from typing import Dict, Any, List
 from groq import Groq
 from app.database.crud import (ConversationCRUD, MedicationCRUD,
@@ -70,7 +71,7 @@ Always respond with empathy and care, as if you're genuinely concerned about the
 
         context = "Upcoming important events to remember:\n"
         for event in upcoming_events:
-            days_until = (event.event_date - datetime.now()).days
+            days_until = (to_central(event.event_date) - now_central()).days
             context += f"- {event.title} ({event.event_type}) in {days_until} days"
             if event.description:
                 context += f": {event.description}"
@@ -115,7 +116,7 @@ Always respond with empathy and care, as if you're genuinely concerned about the
             MedicationLogCRUD.log_medication_taken(
                 user_id=user_id,
                 medication_id=medication.id,
-                scheduled_time=datetime.now(),
+                scheduled_time=now_central(),
                 status="taken",
                 notes=notes)
 
@@ -479,5 +480,5 @@ Respond naturally and warmly based on ALL the context provided."""
         return {
             "prompt": prompt,
             "checkin_type": checkin_type,
-            "scheduled_time": datetime.now()
+            "scheduled_time": now_central()
         }

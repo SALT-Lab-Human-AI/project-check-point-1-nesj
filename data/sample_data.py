@@ -1,3 +1,4 @@
+from utils.timezone_utils import now_central
 import json
 from datetime import datetime, timedelta, time
 from app.database.models import create_tables
@@ -102,7 +103,7 @@ def initialize_sample_data():
             event_type="family_event",
             title="Grandson's Birthday",
             description="Tommy turns 10 years old",
-            event_date=datetime.now() + timedelta(days=15),
+            event_date=now_central() + timedelta(days=15),
             importance="high"
         )
         
@@ -111,7 +112,7 @@ def initialize_sample_data():
             event_type="appointment",
             title="Doctor's Appointment",
             description="Regular checkup with Dr. Smith",
-            event_date=datetime.now() + timedelta(days=7),
+            event_date=now_central() + timedelta(days=7),
             importance="medium"
         )
         
@@ -120,7 +121,7 @@ def initialize_sample_data():
             event_type="hobby",
             title="Chess Club Meeting",
             description="Weekly chess club at community center",
-            event_date=datetime.now() + timedelta(days=3),
+            event_date=now_central() + timedelta(days=3),
             recurring=True,
             importance="medium"
         )
@@ -184,7 +185,7 @@ def initialize_sample_data():
                 "sentiment_score": 0.7,
                 "sentiment_label": "positive",
                 "conversation_type": "checkin",
-                "timestamp": datetime.now() - timedelta(hours=2)
+                "timestamp": now_central() - timedelta(hours=2)
             },
             {
                 "message": "I took my Lisinopril and Vitamin D with breakfast. The Metformin I'll take tonight.",
@@ -192,7 +193,7 @@ def initialize_sample_data():
                 "sentiment_score": 0.4,
                 "sentiment_label": "positive",
                 "conversation_type": "medication",
-                "timestamp": datetime.now() - timedelta(hours=1, minutes=45)
+                "timestamp": now_central() - timedelta(hours=1, minutes=45)
             },
             {
                 "message": "My grandson called me yesterday and we talked for an hour. It made me so happy!",
@@ -200,7 +201,7 @@ def initialize_sample_data():
                 "sentiment_score": 0.8,
                 "sentiment_label": "positive",
                 "conversation_type": "general",
-                "timestamp": datetime.now() - timedelta(days=1, hours=3)
+                "timestamp": now_central() - timedelta(days=1, hours=3)
             },
             {
                 "message": "I'm feeling a bit lonely today. My usual walking group cancelled because of the weather.",
@@ -208,7 +209,7 @@ def initialize_sample_data():
                 "sentiment_score": -0.4,
                 "sentiment_label": "negative",
                 "conversation_type": "general",
-                "timestamp": datetime.now() - timedelta(days=2, hours=5)
+                "timestamp": now_central() - timedelta(days=2, hours=5)
             },
             {
                 "message": "I've been having some trouble remembering things lately. Yesterday I couldn't remember if I took my morning pills.",
@@ -216,7 +217,7 @@ def initialize_sample_data():
                 "sentiment_score": -0.6,
                 "sentiment_label": "negative",
                 "conversation_type": "general",
-                "timestamp": datetime.now() - timedelta(days=3, hours=2)
+                "timestamp": now_central() - timedelta(days=3, hours=2)
             }
         ]
         
@@ -227,7 +228,7 @@ def initialize_sample_data():
                 "sentiment_score": 0.6,
                 "sentiment_label": "positive",
                 "conversation_type": "general",
-                "timestamp": datetime.now() - timedelta(hours=4)
+                "timestamp": now_central() - timedelta(hours=4)
             },
             {
                 "message": "I'm worried about my cholesterol levels. The doctor wants to see me again next month.",
@@ -235,7 +236,7 @@ def initialize_sample_data():
                 "sentiment_score": -0.3,
                 "sentiment_label": "negative",
                 "conversation_type": "general",
-                "timestamp": datetime.now() - timedelta(days=1, hours=6)
+                "timestamp": now_central() - timedelta(days=1, hours=6)
             },
             {
                 "message": "I played chess online with my old colleague today. I won two games!",
@@ -243,7 +244,7 @@ def initialize_sample_data():
                 "sentiment_score": 0.7,
                 "sentiment_label": "positive",
                 "conversation_type": "general",
-                "timestamp": datetime.now() - timedelta(days=2, hours=3)
+                "timestamp": now_central() - timedelta(days=2, hours=3)
             }
         ]
         
@@ -273,7 +274,7 @@ def initialize_sample_data():
         # Create sample medication logs (showing some adherence patterns)
         # Dorothy's medication logs - good adherence with a few missed doses
         for i in range(7):  # Last 7 days
-            day = datetime.now() - timedelta(days=i)
+            day = now_central() - timedelta(days=i)
             
             # Lisinopril (morning)
             morning_time = day.replace(hour=9, minute=0, second=0, microsecond=0)
@@ -318,7 +319,7 @@ def initialize_sample_data():
         
         # Robert's medication logs - very good adherence
         for i in range(7):
-            day = datetime.now() - timedelta(days=i)
+            day = now_central() - timedelta(days=i)
             
             # Atorvastatin (evening)
             evening_time = day.replace(hour=21, minute=0, second=0, microsecond=0)
@@ -349,7 +350,7 @@ def initialize_sample_data():
             reminder_type="checkin",
             title="Good Morning Check-in",
             message="Good morning Dorothy! How are you feeling today? Did you sleep well?",
-            scheduled_time=datetime.now() + timedelta(hours=1)
+            scheduled_time=now_central() + timedelta(hours=1)
         )
         
         ReminderCRUD.create_reminder(
@@ -357,7 +358,7 @@ def initialize_sample_data():
             reminder_type="medication",
             title="Evening Metformin Reminder",
             message="Hi Dorothy, it's time for your evening Metformin (500mg). Remember to take it with food!",
-            scheduled_time=datetime.now() + timedelta(hours=8),
+            scheduled_time=now_central() + timedelta(hours=8),
             medication_id=med2.id
         )
         
@@ -366,7 +367,7 @@ def initialize_sample_data():
             reminder_type="medication",
             title="Evening Atorvastatin",
             message="Good evening Robert, time for your Atorvastatin (20mg). Remember to avoid grapefruit!",
-            scheduled_time=datetime.now() + timedelta(hours=10),
+            scheduled_time=now_central() + timedelta(hours=10),
             medication_id=med4.id
         )
         

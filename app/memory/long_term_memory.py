@@ -1,3 +1,4 @@
+from utils.timezone_utils import now_central
 """
 Long-term semantic memory using TF-IDF vectorization
 Retrieves semantically similar past conversations without external APIs
@@ -67,7 +68,7 @@ class LongTermMemory:
         # Create TF-IDF vectors
         if texts:
             self.conversation_vectors = self.vectorizer.fit_transform(texts)
-            self.last_update = datetime.now()
+            self.last_update = now_central()
             self._save_memory()
     
     def retrieve_similar_conversations(self, query: str, user_id: int, 
@@ -157,7 +158,7 @@ class LongTermMemory:
         if self.last_update is None:
             return True
         # Update if more than 1 hour old
-        time_diff = datetime.now() - self.last_update
+        time_diff = now_central() - self.last_update
         return time_diff.total_seconds() > 3600
     
     def _save_memory(self):

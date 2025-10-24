@@ -1,3 +1,4 @@
+from utils.timezone_utils import now_central
 """
 Unified Memory Manager orchestrating all four memory layers
 Provides a single interface for context-aware, personalized responses
@@ -128,7 +129,7 @@ class MemoryManager:
         
         elif any(word in query_lower for word in ['today', 'yesterday', 'summary']):
             # Get episodic summary
-            date = datetime.now()
+            date = now_central()
             if 'yesterday' in query_lower:
                 from datetime import timedelta
                 date = date - timedelta(days=1)
