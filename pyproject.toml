@@ -15,6 +15,7 @@ dependencies = [
     "gtts>=2.5.4",
     "scikit-learn>=1.7.2",
     "numpy>=2.3.3",
+    "chromadb>=1.2.2",
 ]
 
 [[tool.uv.index]]
