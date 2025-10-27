@@ -3,12 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Optional, Dict, Any
+from zoneinfo import ZoneInfo
 import json
 
 from app.database.models import get_session, Session
 from app.database.crud import (
     UserCRUD, MedicationCRUD, ConversationCRUD, ReminderCRUD,
-    MedicationLogCRUD, CaregiverAlertCRUD
+    MedicationLogCRUD, CaregiverAlertCRUD, PersonalEventCRUD
 )
 from app.agents.companion_agent import CompanionAgent
 from app.memory.conversation_store import ConversationMemoryStore
@@ -294,6 +295,22 @@ async def get_important_context(user_id: int):
         memory_store = ConversationMemoryStore(user_id)
         context = memory_store.get_important_context()
         return {"context": context}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Events endpoints
+@app.get("/events/high_importance_today")
+async def get_high_importance_today(user_id: int):
+    """Get today's high-importance events with DST-aware local times"""
+    try:
+        from utils.timezone_utils import now_central
+        
+        events = PersonalEventCRUD.high_importance_today(user_id)
+        
+        return {
+            "server_time_utc": now_central().astimezone(ZoneInfo("UTC")).isoformat(),
+            "events": events
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
