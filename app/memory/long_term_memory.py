@@ -36,7 +36,8 @@ class LongTermMemory:
             )
         )
         
-        # Get or create collection (uses default embedding function)
+        # Get or create collection (uses ChromaDB's default embedding function)
+        # Default function is lightweight, local, and requires no additional dependencies
         self.collection = self.client.get_or_create_collection(
             name="carely_memory",
             metadata={"hnsw:space": "cosine"}

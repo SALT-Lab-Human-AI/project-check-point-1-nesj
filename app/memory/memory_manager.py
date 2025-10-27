@@ -70,8 +70,8 @@ class MemoryManager:
             context_parts.append("=== USER PROFILE ===")
             context_parts.append(profile)
         
-        # 2. Short-Term Memory - Recent conversation (DB-based, last 8 messages)
-        short_term_context = self.short_term.get_formatted_context(user_id, num_exchanges=8)
+        # 2. Short-Term Memory - Recent conversation (DB-based, last 10 messages)
+        short_term_context = self.short_term.get_formatted_context(user_id, num_exchanges=10)
         if short_term_context and "No recent" not in short_term_context:
             context_parts.append("\n=== RECENT CONVERSATION ===")
             context_parts.append(short_term_context)
