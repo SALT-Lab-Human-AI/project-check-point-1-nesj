@@ -396,6 +396,43 @@ Be gentle, patient, and use simple everyday language. Never use medical jargon."
         message_lower = message.lower()
         return any(keyword in message_lower for keyword in concerning_keywords)
 
+    def _get_next_medication_time(self, user_id: int) -> str:
+        """Get the next scheduled medication time for a user"""
+        medications = MedicationCRUD.get_user_medications(user_id, active_only=True)
+        if not medications:
+            return "You don't have any medications scheduled right now."
+        
+        current_time = now_central()
+        next_med = None
+        next_time = None
+        
+        for med in medications:
+            try:
+                schedule_times = json.loads(med.schedule_times)
+                for time_str in schedule_times:
+                    # Parse time string (HH:MM format)
+                    hour, minute = map(int, time_str.split(':'))
+                    
+                    # Create datetime for today
+                    scheduled_dt = current_time.replace(hour=hour, minute=minute, second=0, microsecond=0)
+                    
+                    # If time has passed today, check tomorrow
+                    if scheduled_dt <= current_time:
+                        scheduled_dt = scheduled_dt + timedelta(days=1)
+                    
+                    # Track the earliest next medication
+                    if next_time is None or scheduled_dt < next_time:
+                        next_time = scheduled_dt
+                        next_med = med
+            except (json.JSONDecodeError, ValueError):
+                continue
+        
+        if next_med and next_time:
+            time_str = next_time.strftime("%I:%M %p %Z")
+            return f"Your next {next_med.name} is due at {time_str}."
+        
+        return "I couldn't find your next medication time."
+
     def generate_response(
             self,
             user_id: int,
@@ -403,11 +440,48 @@ Be gentle, patient, and use simple everyday language. Never use medical jargon."
             conversation_type: str = "general") -> Dict[str, Any]:
         """Generate AI response with context and tools using memory system"""
         try:
-            # Check if this is a time-intent query (handle without LLM)
-            time_query_keywords = ['what time', 'time now', 'current time', 'what\'s the time', 
-                                   'tell me the time', 'time is it', 'what time is it']
             message_lower = user_message.lower()
-            is_time_query = any(keyword in message_lower for keyword in time_query_keywords)
+            
+            # FIRST: Check if this is a medication timing query (handle without LLM)
+            medication_timing_keywords = ['when should i take', 'next medication', 'next dose', 
+                                         'meds due', 'medication due', 'what time are my meds',
+                                         'when is my medication', 'medication schedule',
+                                         'next pill', 'when do i take']
+            is_med_timing_query = any(keyword in message_lower for keyword in medication_timing_keywords)
+            
+            if is_med_timing_query:
+                med_response = self._get_next_medication_time(user_id)
+                
+                # Save this simple interaction
+                ConversationCRUD.save_conversation(
+                    user_id=user_id,
+                    message=user_message,
+                    response=med_response,
+                    conversation_type="medication_schedule_query"
+                )
+                
+                return {
+                    "response": med_response,
+                    "sentiment_score": 0.5,
+                    "sentiment_label": "helpful",
+                    "alert_sent": False,
+                    "quick_actions": ["log_medication"],
+                    "is_emergency": False
+                }
+            
+            # SECOND: Check if this is a current time query (handle without LLM)
+            # Exclude medication-related queries by checking they're not about meds/pills/dose
+            time_query_keywords = ['time now', 'current time', 'what\'s the time', 
+                                   'tell me the time', 'time is it']
+            # Only match if not asking about medication
+            is_time_query = (any(keyword in message_lower for keyword in time_query_keywords) and
+                           not any(med_word in message_lower for med_word in ['med', 'pill', 'dose', 'medication']))
+            
+            # Also handle "what time" if it's clearly about current time, not meds
+            if 'what time' in message_lower and not is_med_timing_query:
+                # If "what time" is followed by "is it" or similar, it's asking current time
+                if any(phrase in message_lower for phrase in ['what time is it', 'what time it is']):
+                    is_time_query = True
             
             if is_time_query:
                 # Get current time using timezone utility
