@@ -11,6 +11,7 @@ from app.database.crud import (
     CaregiverAlertCRUD, UserCRUD, PersonalEventCRUD
 )
 from app.agents.companion_agent import CompanionAgent
+from app.memory.memory_manager import MemoryManager
 from utils.timezone_utils import now_central, CENTRAL_TZ, to_central
 
 # Setup logging
@@ -21,6 +22,7 @@ class ReminderScheduler:
     def __init__(self):
         self.scheduler = BackgroundScheduler()
         self.companion_agent = CompanionAgent()
+        self.memory_manager = MemoryManager()
         self.is_running = False
     
     def start(self):
@@ -43,6 +45,9 @@ class ReminderScheduler:
             
             # Schedule adherence monitoring
             self.schedule_adherence_monitoring()
+            
+            # Schedule daily summary generation and vector store updates
+            self.schedule_daily_summaries()
             
             self.scheduler.start()
             self.is_running = True
@@ -451,3 +456,42 @@ Recommendations:
             
         except Exception as e:
             logger.error(f"Failed to send custom reminder: {e}")
+    
+    def schedule_daily_summaries(self):
+        """Schedule daily summary generation at 11:59 PM Central Time"""
+        self.scheduler.add_job(
+            func=self.generate_all_daily_summaries,
+            trigger=CronTrigger(hour=23, minute=59, timezone=CENTRAL_TZ),
+            id='daily_summaries',
+            name='Daily Summary Generation',
+            replace_existing=True
+        )
+        logger.info("Daily summary generation scheduled")
+    
+    def generate_all_daily_summaries(self):
+        """Generate and store daily summaries for all users"""
+        try:
+            users = UserCRUD.get_all_users()
+            current_date = now_central()
+            
+            for user in users:
+                try:
+                    # Generate episodic summary
+                    summary = self.memory_manager.generate_daily_summary(user.id)
+                    
+                    if summary and summary.summary_text:
+                        # Add to vector store for semantic retrieval
+                        self.memory_manager.add_daily_summary(
+                            user_id=user.id,
+                            summary_text=summary.summary_text,
+                            date=current_date
+                        )
+                        logger.info(f"Generated and stored daily summary for user {user.id}")
+                        
+                except Exception as e:
+                    logger.error(f"Failed to generate summary for user {user.id}: {e}")
+            
+            logger.info("Daily summaries generated for all users")
+            
+        except Exception as e:
+            logger.error(f"Failed to generate daily summaries: {e}")
