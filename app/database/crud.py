@@ -1,7 +1,7 @@
 from sqlmodel import Session, select
 from datetime import datetime, timedelta
 from utils.timezone_utils import now_central, start_of_day_central
-from typing import List, Optional
+from typing import List, Optional, Dict
 import json
 from app.database.models import (
     get_session, User, Medication, Conversation, Reminder, 
