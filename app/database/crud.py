@@ -399,3 +399,107 @@ class PersonalEventCRUD:
                 session.commit()
                 return True
             return False
+    
+    @staticmethod
+    def high_importance_today(user_id: int, local_tz: str = "America/Chicago") -> List[Dict]:
+        """
+        Get today's high-importance events with DST-aware local time formatting
+        
+        Args:
+            user_id: User ID
+            local_tz: Local timezone (defaults to America/Chicago)
+        
+        Returns:
+            List of dicts with formatted event data sorted by time
+        """
+        from zoneinfo import ZoneInfo
+        from utils.timezone_utils import (
+            start_of_day_central, end_of_day_central, 
+            to_central, format_central_time, get_timezone_name
+        )
+        
+        # Get local day boundaries
+        day_start = start_of_day_central()
+        day_end = end_of_day_central()
+        
+        # Convert to UTC for DB query
+        day_start_utc = day_start.astimezone(ZoneInfo("UTC"))
+        day_end_utc = day_end.astimezone(ZoneInfo("UTC"))
+        
+        with get_session() as session:
+            # Query high-importance events for today
+            query = select(PersonalEvent).where(
+                PersonalEvent.user_id == user_id,
+                PersonalEvent.importance == 'high',
+                PersonalEvent.event_date.isnot(None),
+                PersonalEvent.event_date >= day_start_utc,
+                PersonalEvent.event_date < day_end_utc
+            ).order_by(PersonalEvent.event_date)
+            
+            regular_events = session.exec(query).all()
+            
+            # Also get recurring events (treat as repeating today at same local time)
+            recurring_query = select(PersonalEvent).where(
+                PersonalEvent.user_id == user_id,
+                PersonalEvent.importance == 'high',
+                PersonalEvent.recurring == True,
+                PersonalEvent.event_date.isnot(None)
+            )
+            
+            recurring_events = session.exec(recurring_query).all()
+            
+            # Process all events
+            results = []
+            
+            # Add regular events
+            for event in regular_events:
+                event_local = to_central(event.event_date)
+                tz_abbr = get_timezone_name(event_local)
+                
+                results.append({
+                    "id": event.id,
+                    "title": event.title,
+                    "description": event.description or "",
+                    "event_start_utc": event.event_date.isoformat(),
+                    "event_time_local": event_local.strftime(f"%I:%M %p {tz_abbr}"),
+                    "recurring": 0,
+                    "event_type": event.event_type
+                })
+            
+            # Add recurring events (compute today's occurrence)
+            for event in recurring_events:
+                # Extract time from original event_date
+                event_local = to_central(event.event_date)
+                event_time = event_local.time()
+                
+                # Combine with today's date
+                from datetime import datetime
+                today_occurrence = datetime.combine(
+                    day_start.date(), 
+                    event_time,
+                    tzinfo=ZoneInfo(local_tz)
+                )
+                
+                # Check if this recurring event already exists in regular_events
+                # (to avoid duplicates if user created both one-time and recurring)
+                is_duplicate = any(
+                    e.id == event.id for e in regular_events
+                )
+                
+                if not is_duplicate:
+                    tz_abbr = get_timezone_name(today_occurrence)
+                    
+                    results.append({
+                        "id": event.id,
+                        "title": event.title,
+                        "description": event.description or "",
+                        "event_start_utc": today_occurrence.astimezone(ZoneInfo("UTC")).isoformat(),
+                        "event_time_local": today_occurrence.strftime(f"%I:%M %p {tz_abbr}"),
+                        "recurring": 1,
+                        "event_type": event.event_type
+                    })
+            
+            # Sort by event time
+            results.sort(key=lambda x: x["event_start_utc"])
+            
+            return results

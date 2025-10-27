@@ -1,0 +1,42 @@
+Proactive schedule reminder :
+ 
+Add a proactive “🔔 Today’s Schedule” panel to the Overview page using the personalevent table (columns: id, user_id, event_type, title, description, event_date (timestamp), recurring (0/1), importance, created_at).
+Modify only:
+app/database/crud.py
+app/api/routes.py
+frontend/dashboard.py
+Reuse utils/timezone_utils.py (local day boundaries, DST-safe formatting)
+1) CRUD: fetch today’s high-importance events (local day)
+Create a helper in crud.py:
+Name: PersonalEventCRUD.high_importance_today(user_id, local_tz="America/Chicago")
+Behavior:
+Compute local midnight → next midnight for today using timezone utils; convert both to UTC.
+Query personalevent with:
+user_id = ?
+importance = 'high'
+event_date between [start_utc, end_utc)
+Recurring = 1 handling: treat as an event that repeats today at the same local time as the original event_date time; include it in today’s list by cloning today’s date + original local time (do not write a new row; return as a computed item).
+Return items sorted by time, each with: id, title, description, event_start_utc, and a preformatted local time string (e.g., "07:30 PM CDT") generated server-side via timezone utils. Keep messages short.
+2) API: endpoint for Overview polling
+In routes.py add:
+GET /events/high_importance_today?user_id=...
+Returns JSON:
+{"server_time_utc": "...","events": [{"id": 123,"title": "...","description": "...","event_start_utc": "...","event_time_local": "07:30 PM CDT","recurring": 0,"event_type": "appointment"}] } 
+Time strings must come from timezone utils (no hardcoded “CST”).
+3) Frontend: Overview panel with light polling
+In frontend/dashboard.py (Overview tab):
+Poll GET /events/high_importance_today every 15–30s without blocking the page.
+Render a card “🔔 Today’s High-Importance Events”:
+For each event: show event_time_local, title, short description (truncate if long).
+If none: show “✅ No high-importance events left today.”
+(Optional quick actions; if not implemented yet, just display the list.)
+4) Constraints & hygiene
+Do not change DB schema. Use the existing personalevent columns exactly as shown.
+Use UTC in storage and convert to/from local using utils/timezone_utils.py.
+Recurring = 1: treat as repeat today at the same local clock time inferred from event_date’s time component.
+Keep API responses small; limit to today only.
+5) Acceptance criteria
+For importance='high' rows whose event_date falls on today (local), the Overview shows them sorted by time with correct DST-aware local times.
+Rows with recurring=1 appear today at the original local time (computed), even if the stored event_date date is in the past.
+When no matching events exist for today, the panel shows the green “✅” state.
+No hardcoded “CST”; all times formatted via timezone utils.
