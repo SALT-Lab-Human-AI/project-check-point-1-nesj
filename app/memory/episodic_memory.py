@@ -161,6 +161,34 @@ class EpisodicMemory:
             )
             return session.exec(query).first()
     
+    def get_daily_summary(self, user_id: int, date_central: datetime) -> Optional[Dict]:
+        """
+        Get daily summary content only (for deterministic queries)
+        
+        Args:
+            user_id: User ID
+            date_central: Central time date
+        
+        Returns:
+            Dict with summary_text, key_topics list, and date string, or None
+        """
+        summary = self.get_summary(user_id, date_central)
+        
+        if not summary:
+            return None
+        
+        # Parse key topics from JSON
+        try:
+            key_topics = json.loads(summary.key_topics) if summary.key_topics else []
+        except:
+            key_topics = []
+        
+        return {
+            "summary_text": summary.summary_text,
+            "key_topics": key_topics,
+            "date": summary.date.strftime('%B %d, %Y')
+        }
+    
     def get_recent_summaries(self, user_id: int, days: int = 7) -> List[DailySummary]:
         """
         Get summaries for recent days

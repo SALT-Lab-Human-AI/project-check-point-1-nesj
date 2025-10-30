@@ -401,6 +401,71 @@ class PersonalEventCRUD:
             return False
     
     @staticmethod
+    def get_upcoming_past_events(user_id: int, window_days: int = 7) -> List[PersonalEvent]:
+        """
+        Get events in a window before and after today
+        
+        Args:
+            user_id: User ID
+            window_days: Number of days before/after today (default 7)
+        
+        Returns:
+            List of PersonalEvent objects in the window
+        """
+        with get_session() as session:
+            past_date = now_central() - timedelta(days=window_days)
+            future_date = now_central() + timedelta(days=window_days)
+            
+            query = select(PersonalEvent).where(
+                PersonalEvent.user_id == user_id,
+                PersonalEvent.event_date.isnot(None),
+                PersonalEvent.event_date >= past_date,
+                PersonalEvent.event_date <= future_date
+            ).order_by(PersonalEvent.event_date)
+            
+            return session.exec(query).all()
+    
+    @staticmethod
+    def find_event_by_name(user_id: int, name: str, window_days: int = 7) -> List[PersonalEvent]:
+        """
+        Find events by name with fuzzy matching in a time window
+        
+        Args:
+            user_id: User ID
+            name: Event name/title to search for (partial match)
+            window_days: Number of days before/after today to search (default 7)
+        
+        Returns:
+            List of matching PersonalEvent objects
+        """
+        with get_session() as session:
+            past_date = now_central() - timedelta(days=window_days)
+            future_date = now_central() + timedelta(days=window_days)
+            
+            # Get all events in the window
+            query = select(PersonalEvent).where(
+                PersonalEvent.user_id == user_id,
+                PersonalEvent.event_date.isnot(None),
+                PersonalEvent.event_date >= past_date,
+                PersonalEvent.event_date <= future_date
+            )
+            
+            all_events = session.exec(query).all()
+            
+            # Fuzzy match on title (case-insensitive, partial match)
+            name_lower = name.lower()
+            matches = []
+            
+            for event in all_events:
+                if name_lower in event.title.lower():
+                    matches.append(event)
+            
+            # Sort by event date
+            matches.sort(key=lambda e: e.event_date)
+            
+            return matches
+    
+    @staticmethod
     def high_importance_today(user_id: int, local_tz: str = "America/Chicago") -> List[Dict]:
         """
         Get today's high-importance events with DST-aware local time formatting

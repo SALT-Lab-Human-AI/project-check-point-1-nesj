@@ -5,8 +5,10 @@ Retrieves semantically similar past conversations, summaries, and profile facts
 
 import os
 import uuid
+import hashlib
+import math
 from typing import List, Dict, Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import chromadb
 from chromadb.config import Settings
@@ -17,14 +19,16 @@ from app.database.crud import ConversationCRUD
 class LongTermMemory:
     """Manages long-term semantic memory using ChromaDB embeddings"""
     
-    def __init__(self, storage_path: str = "data/vectors"):
+    def __init__(self, storage_path: str = "data/vectors", embedding_model: str = "all-MiniLM-L6-v2"):
         """
         Initialize long-term memory system with ChromaDB
         
         Args:
             storage_path: Path to store vector database
+            embedding_model: SentenceTransformers model name (default: all-MiniLM-L6-v2)
         """
         self.storage_path = storage_path
+        self.embedding_model = embedding_model
         os.makedirs(storage_path, exist_ok=True)
         
         # Initialize ChromaDB client with persistent storage
@@ -36,18 +40,33 @@ class LongTermMemory:
             )
         )
         
-        # Get or create collection (uses ChromaDB's default embedding function)
-        # Default function is lightweight, local, and requires no additional dependencies
+        # Try to use SentenceTransformer embedding function
+        # Falls back to ChromaDB default if sentence-transformers is unavailable
+        try:
+            from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
+            embedding_function = SentenceTransformerEmbeddingFunction(model_name=embedding_model)
+        except ImportError:
+            # Fallback to default embedding function
+            embedding_function = None
+            print(f"Using ChromaDB default embedding (sentence-transformers not available)")
+        
+        # Get or create collection with configured embedding function
         self.collection = self.client.get_or_create_collection(
             name="carely_memory",
-            metadata={"hnsw:space": "cosine"}
+            metadata={"hnsw:space": "cosine"},
+            embedding_function=embedding_function
         )
         
         self.last_update = None
+        self.max_raw_per_user = 200  # Hygiene: cap raw conversations per user
+    
+    def _compute_content_hash(self, text: str) -> str:
+        """Compute hash for deduplication"""
+        return hashlib.md5(text.encode()).hexdigest()
     
     def add_conversation(self, user_id: int, conversation_id: int, 
                         user_message: str, assistant_response: str, 
-                        timestamp: datetime) -> None:
+                        timestamp: datetime, title: str = None, tags: List[str] = None) -> None:
         """
         Add a single conversation to the vector store (incremental update)
         
@@ -57,32 +76,44 @@ class LongTermMemory:
             user_message: User's message
             assistant_response: Assistant's response
             timestamp: Timestamp of conversation
+            title: Optional title/summary for the conversation
+            tags: Optional tags for categorization
         """
         try:
             # Combine user message and response for richer context
             combined_text = f"{user_message} {assistant_response}"
             
+            # Compute content hash for deduplication
+            content_hash = self._compute_content_hash(combined_text)
+            
             # Create unique ID for this entry
             doc_id = f"user_{user_id}_conv_{conversation_id}"
+            
+            # Standardized metadata
+            metadata = {
+                "user_id": user_id,
+                "type": "conversation",
+                "timestamp_utc": timestamp.isoformat(),
+                "title": title or f"Conversation {conversation_id}",
+                "tags": ",".join(tags) if tags else "",
+                "content_hash": content_hash,
+                "source_id": conversation_id,
+                "user_message": user_message[:200],
+                "assistant_response": assistant_response[:200]
+            }
             
             # Add to collection
             self.collection.upsert(
                 ids=[doc_id],
                 documents=[combined_text],
-                metadatas=[{
-                    "user_id": user_id,
-                    "type": "conversation",
-                    "source_id": conversation_id,
-                    "timestamp": timestamp.isoformat(),
-                    "user_message": user_message[:200],  # Truncate for metadata
-                    "assistant_response": assistant_response[:200]
-                }]
+                metadatas=[metadata]
             )
             
         except Exception as e:
             print(f"Error adding conversation to vector store: {e}")
     
-    def add_summary(self, user_id: int, summary_text: str, date: datetime) -> None:
+    def add_summary(self, user_id: int, summary_text: str, date: datetime, 
+                   key_topics: List[str] = None) -> None:
         """
         Add or update a daily summary in the vector store
         
@@ -90,6 +121,7 @@ class LongTermMemory:
             user_id: User ID
             summary_text: Summary text (3-6 lines)
             date: Date of the summary
+            key_topics: Optional list of key topics from the summary
         """
         try:
             # Keep summaries concise (≤2 sentences for retrieval)
@@ -98,21 +130,28 @@ class LongTermMemory:
             
             doc_id = f"user_{user_id}_summary_{date.strftime('%Y%m%d')}"
             
+            # Standardized metadata for summaries
+            metadata = {
+                "user_id": user_id,
+                "type": "summary",
+                "timestamp_utc": date.isoformat(),
+                "title": f"Daily Summary {date.strftime('%Y-%m-%d')}",
+                "tags": ",".join(key_topics) if key_topics else "",
+                "date": date.strftime('%Y-%m-%d'),
+                "content_hash": self._compute_content_hash(concise_summary)
+            }
+            
             self.collection.upsert(
                 ids=[doc_id],
                 documents=[concise_summary],
-                metadatas=[{
-                    "user_id": user_id,
-                    "type": "summary",
-                    "date": date.strftime('%Y-%m-%d'),
-                    "timestamp": date.isoformat()
-                }]
+                metadatas=[metadata]
             )
             
         except Exception as e:
             print(f"Error adding summary to vector store: {e}")
     
-    def add_profile_fact(self, user_id: int, fact: str, fact_type: str = "general") -> None:
+    def add_profile_fact(self, user_id: int, fact: str, fact_type: str = "general", 
+                        tags: List[str] = None) -> None:
         """
         Add a profile fact (preferences, meal times, etc.) to the vector store
         
@@ -120,83 +159,102 @@ class LongTermMemory:
             user_id: User ID
             fact: One-liner fact about the user
             fact_type: Type of fact (e.g., "meal_time", "preference")
+            tags: Optional tags for categorization
         """
         try:
             doc_id = f"user_{user_id}_fact_{fact_type}_{uuid.uuid4().hex[:8]}"
             
+            # Standardized metadata
+            metadata = {
+                "user_id": user_id,
+                "type": "profile_fact",
+                "timestamp_utc": now_central().isoformat(),
+                "title": f"{fact_type.replace('_', ' ').title()} fact",
+                "tags": ",".join(tags) if tags else fact_type,
+                "fact_type": fact_type,
+                "content_hash": self._compute_content_hash(fact)
+            }
+            
             self.collection.upsert(
                 ids=[doc_id],
                 documents=[fact],
-                metadatas=[{
-                    "user_id": user_id,
-                    "type": "profile_fact",
-                    "fact_type": fact_type,
-                    "timestamp": now_central().isoformat()
-                }]
+                metadatas=[metadata]
             )
             
         except Exception as e:
             print(f"Error adding profile fact to vector store: {e}")
     
-    def retrieve_similar_conversations(self, query: str, user_id: int, 
-                                      top_k: int = 3, exclude_query: str = None) -> List[Dict]:
+    def _calculate_recency_score(self, timestamp_str: str, half_life_days: float = 30.0) -> float:
         """
-        Retrieve semantically similar past conversations
+        Calculate recency score with exponential decay
+        
+        Args:
+            timestamp_str: ISO timestamp string
+            half_life_days: Number of days for 50% decay (default 30)
+        
+        Returns:
+            Recency score between 0 and 1
+        """
+        try:
+            timestamp = datetime.fromisoformat(timestamp_str)
+            age_days = (now_central() - timestamp).total_seconds() / 86400.0
+            decay_rate = math.log(2) / half_life_days
+            return math.exp(-decay_rate * age_days)
+        except:
+            return 0.5  # Default mid-range score if parsing fails
+    
+    def retrieve_similar_conversations(self, query: str, user_id: int, 
+                                      top_k: int = 7, exclude_query: str = None) -> List[Dict]:
+        """
+        Retrieve semantically similar past conversations with recency re-ranking
+        Returns mix of 2 summaries + 3-5 raw snippets
         
         Args:
             query: User's current query
             user_id: User ID
-            top_k: Total number of snippets to retrieve (max 3)
+            top_k: Total number of items to retrieve (default 7 for 2 summaries + 5 snippets)
             exclude_query: Query text to exclude from results
         
         Returns:
-            List of similar items (conversations, summaries, facts)
+            List of similar items (conversations, summaries, facts) with recency re-ranking
         """
         try:
-            # Query the collection
+            # Query the collection - get more candidates for filtering
             results = self.collection.query(
                 query_texts=[query],
-                n_results=min(top_k * 3, 10),  # Get more candidates for filtering
+                n_results=min(top_k * 3, 30),
                 where={"user_id": user_id}
             )
             
             if not results or not results['ids'] or not results['ids'][0]:
                 return []
             
-            similar_items = []
+            # First pass: collect and score all items
+            candidates = []
             exclude_lower = exclude_query.lower().strip() if exclude_query else ""
             
-            # Track how many of each type we've added
-            conv_count = 0
-            other_count = 0
-            
             for idx, doc_id in enumerate(results['ids'][0]):
-                if len(similar_items) >= top_k:
-                    break
-                
                 metadata = results['metadatas'][0][idx]
                 document = results['documents'][0][idx]
-                distance = results['distances'][0][idx] if 'distances' in results else None
+                distance = results['distances'][0][idx] if 'distances' in results else 0.5
                 
                 # Skip if too similar to current query (avoid echoing)
-                if exclude_query:
-                    if metadata.get('user_message', '').lower().strip() == exclude_lower:
-                        continue
-                    # Skip if distance is too small (too similar)
-                    if distance is not None and distance < 0.1:
-                        continue
+                if exclude_query and metadata.get('user_message', '').lower().strip() == exclude_lower:
+                    continue
+                if distance < 0.05:  # Very low distance = near duplicate
+                    continue
+                
+                # Get timestamp for recency scoring
+                timestamp_str = metadata.get('timestamp_utc') or metadata.get('timestamp', '')
+                recency_score = self._calculate_recency_score(timestamp_str)
+                
+                # Semantic relevance (inverse of distance)
+                semantic_score = 1.0 - distance
+                
+                # Combined score: 70% semantic, 30% recency
+                combined_score = (semantic_score * 0.7) + (recency_score * 0.3)
                 
                 item_type = metadata.get('type', 'conversation')
-                
-                # Enforce limits: max 1 conversation, max 2 summaries/facts
-                if item_type == 'conversation':
-                    if conv_count >= 1:
-                        continue
-                    conv_count += 1
-                else:
-                    if other_count >= 2:
-                        continue
-                    other_count += 1
                 
                 # Truncate to ≤2 sentences
                 sentences = document.split('.')[:2]
@@ -204,26 +262,43 @@ class LongTermMemory:
                 if concise_text and not concise_text.endswith('.'):
                     concise_text += '.'
                 
-                similar_item = {
+                candidate = {
                     "type": item_type,
                     "text": concise_text,
                     "metadata": metadata,
-                    "relevance": 1.0 - distance if distance is not None else 0.5
+                    "relevance": semantic_score,
+                    "recency": recency_score,
+                    "combined_score": combined_score,
+                    "timestamp_str": timestamp_str
                 }
                 
-                # Add specific fields based on type
+                # Add type-specific fields
                 if item_type == 'conversation':
-                    similar_item['user_message'] = metadata.get('user_message', '')
-                    similar_item['assistant_response'] = metadata.get('assistant_response', '')
-                    if 'timestamp' in metadata:
-                        try:
-                            similar_item['timestamp'] = datetime.fromisoformat(metadata['timestamp'])
-                        except:
-                            pass
+                    candidate['user_message'] = metadata.get('user_message', '')
+                    candidate['assistant_response'] = metadata.get('assistant_response', '')
                 
-                similar_items.append(similar_item)
+                candidates.append(candidate)
             
-            return similar_items[:top_k]  # Ensure we return max top_k items
+            # Sort by combined score
+            candidates.sort(key=lambda x: x['combined_score'], reverse=True)
+            
+            # Second pass: enforce mix ratio (2 summaries + 3-5 snippets)
+            summaries = [c for c in candidates if c['type'] == 'summary'][:2]
+            non_summaries = [c for c in candidates if c['type'] != 'summary'][:5]
+            
+            # Combine and re-sort
+            final_items = summaries + non_summaries
+            final_items.sort(key=lambda x: x['combined_score'], reverse=True)
+            
+            # Add timestamp objects for compatibility
+            for item in final_items:
+                if item['timestamp_str']:
+                    try:
+                        item['timestamp'] = datetime.fromisoformat(item['timestamp_str'])
+                    except:
+                        pass
+            
+            return final_items[:top_k]
             
         except Exception as e:
             print(f"Error retrieving similar conversations: {e}")
@@ -294,6 +369,173 @@ class LongTermMemory:
             
         except Exception as e:
             print(f"Error building memory index: {e}")
+    
+    def deduplicate_by_hash(self, user_id: int) -> int:
+        """
+        Remove duplicate entries based on content hash
+        
+        Args:
+            user_id: User ID
+        
+        Returns:
+            Number of duplicates removed
+        """
+        try:
+            # Get all items for this user
+            results = self.collection.get(
+                where={"user_id": user_id}
+            )
+            
+            if not results or not results['ids']:
+                return 0
+            
+            # Track seen hashes
+            seen_hashes = {}
+            duplicates = []
+            
+            for idx, doc_id in enumerate(results['ids']):
+                metadata = results['metadatas'][idx]
+                content_hash = metadata.get('content_hash')
+                
+                if content_hash:
+                    if content_hash in seen_hashes:
+                        # This is a duplicate
+                        duplicates.append(doc_id)
+                    else:
+                        seen_hashes[content_hash] = doc_id
+            
+            # Delete duplicates
+            if duplicates:
+                self.collection.delete(ids=duplicates)
+                print(f"Removed {len(duplicates)} duplicate entries for user {user_id}")
+            
+            return len(duplicates)
+            
+        except Exception as e:
+            print(f"Error deduplicating memory: {e}")
+            return 0
+    
+    def cleanup_old_conversations(self, user_id: int, max_conversations: int = 200) -> int:
+        """
+        Keep only the most recent N raw conversations per user
+        Preserves summaries and profile facts
+        
+        Args:
+            user_id: User ID
+            max_conversations: Maximum number of raw conversations to keep (default 200)
+        
+        Returns:
+            Number of old conversations removed
+        """
+        try:
+            # Get all conversations for this user
+            results = self.collection.get(
+                where={
+                    "user_id": user_id,
+                    "type": "conversation"
+                }
+            )
+            
+            if not results or not results['ids']:
+                return 0
+            
+            # Sort by timestamp (newest first)
+            conversations = []
+            for idx, doc_id in enumerate(results['ids']):
+                metadata = results['metadatas'][idx]
+                timestamp_str = metadata.get('timestamp_utc') or metadata.get('timestamp', '')
+                try:
+                    timestamp = datetime.fromisoformat(timestamp_str)
+                except:
+                    timestamp = datetime.min
+                
+                conversations.append({
+                    'id': doc_id,
+                    'timestamp': timestamp
+                })
+            
+            conversations.sort(key=lambda x: x['timestamp'], reverse=True)
+            
+            # Keep only the most recent max_conversations
+            if len(conversations) > max_conversations:
+                old_conversations = conversations[max_conversations:]
+                old_ids = [c['id'] for c in old_conversations]
+                
+                self.collection.delete(ids=old_ids)
+                print(f"Removed {len(old_ids)} old conversations for user {user_id}")
+                return len(old_ids)
+            
+            return 0
+            
+        except Exception as e:
+            print(f"Error cleaning up old conversations: {e}")
+            return 0
+    
+    def get_user_memory_items(self, user_id: int, memory_type: str = None, 
+                             limit: int = 100) -> List[Dict]:
+        """
+        List memory items for a user (for management UI)
+        
+        Args:
+            user_id: User ID
+            memory_type: Filter by type (conversation, summary, profile_fact) or None for all
+            limit: Maximum number of items to return
+        
+        Returns:
+            List of memory items with metadata
+        """
+        try:
+            where_clause = {"user_id": user_id}
+            if memory_type:
+                where_clause["type"] = memory_type
+            
+            results = self.collection.get(
+                where=where_clause,
+                limit=limit
+            )
+            
+            if not results or not results['ids']:
+                return []
+            
+            items = []
+            for idx, doc_id in enumerate(results['ids']):
+                metadata = results['metadatas'][idx]
+                document = results['documents'][idx]
+                
+                items.append({
+                    'id': doc_id,
+                    'type': metadata.get('type', 'unknown'),
+                    'title': metadata.get('title', 'Untitled'),
+                    'text': document[:200] + '...' if len(document) > 200 else document,
+                    'timestamp': metadata.get('timestamp_utc') or metadata.get('timestamp', ''),
+                    'tags': metadata.get('tags', '')
+                })
+            
+            # Sort by timestamp (newest first)
+            items.sort(key=lambda x: x['timestamp'], reverse=True)
+            
+            return items
+            
+        except Exception as e:
+            print(f"Error listing memory items: {e}")
+            return []
+    
+    def delete_memory_item(self, doc_id: str) -> bool:
+        """
+        Delete a specific memory item by ID
+        
+        Args:
+            doc_id: Document ID to delete
+        
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            self.collection.delete(ids=[doc_id])
+            return True
+        except Exception as e:
+            print(f"Error deleting memory item: {e}")
+            return False
     
     def clear_user_memory(self, user_id: int):
         """

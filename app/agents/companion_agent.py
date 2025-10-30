@@ -38,7 +38,8 @@ YOUR ROLE:
 - Alert caregivers when needed
 - Remember personal details
 
-Be gentle, patient, and use simple everyday language. Never use medical jargon."""
+Be gentle, patient, and use simple everyday language. Never use medical jargon.
+"""
 
     def _limit_to_sentences(self, text: str, max_sentences: int = 4) -> str:
         """
@@ -505,6 +506,135 @@ Be gentle, patient, and use simple everyday language. Never use medical jargon."
                     "quick_actions": [],
                     "is_emergency": False
                 }
+            
+            # THIRD: Deterministic "yesterday/day before" summary handling
+            # Broaden detection to cover common phrasings
+            yesterday_keywords = ['yesterday', 'day before yesterday', 'two days ago']
+            is_yesterday_query = any(keyword in message_lower for keyword in yesterday_keywords)
+            
+            # Expanded talk/summary indicators
+            talk_indicators = ['talk', 'discuss', 'chat', 'conversation', 'tell me about', 
+                             'what did', 'what happened', 'summary', 'recap']
+            is_talk_query = any(indicator in message_lower for indicator in talk_indicators)
+            
+            if is_yesterday_query and is_talk_query:
+                # Determine offset
+                offset_days = 1 if 'yesterday' in message_lower and 'day before' not in message_lower else 2
+                
+                # Fetch summary using Central Time boundaries
+                summary_data = self.memory_manager.fetch_summary_for_relative_day(user_id, offset_days)
+                
+                if summary_data:
+                    # Bypass LLM - return only summary text + key topics
+                    key_topics_str = ", ".join(summary_data['key_topics']) if summary_data['key_topics'] else "general conversation"
+                    response_text = f"{summary_data['summary_text']}\n\nKey topics: {key_topics_str}"
+                else:
+                    offset_label = "yesterday" if offset_days == 1 else "the day before yesterday"
+                    response_text = f"I don't have a summary from {offset_label} yet."
+                
+                # Save this simple interaction
+                ConversationCRUD.save_conversation(
+                    user_id=user_id,
+                    message=user_message,
+                    response=response_text,
+                    conversation_type="yesterday_summary"
+                )
+                
+                return {
+                    "response": response_text,
+                    "sentiment_score": 0.5,
+                    "sentiment_label": "helpful",
+                    "alert_sent": False,
+                    "quick_actions": [],
+                    "is_emergency": False
+                }
+            
+            # FOURTH: Partial entity resolution (e.g., "meeting with Mary")
+            # Check if message mentions partial event names
+            event_mention_keywords = ['meeting', 'appointment', 'doctor', 'event', 'visit']
+            has_event_mention = any(keyword in message_lower for keyword in event_mention_keywords)
+            is_question = any(q in message_lower for q in ['when', 'what time', 'where', 'remind'])
+            
+            if has_event_mention and is_question:
+                # Extract and sanitize potential event names
+                import string
+                words = user_message.split()
+                potential_names = []
+                
+                for keyword in event_mention_keywords:
+                    if keyword in message_lower:
+                        try:
+                            idx = [w.lower() for w in words].index(keyword)
+                            # Get next 2-4 words after keyword
+                            phrase = " ".join(words[idx:min(idx+4, len(words))])
+                            
+                            # Strip punctuation from the phrase
+                            phrase = phrase.translate(str.maketrans('', '', string.punctuation))
+                            
+                            # Remove common stopwords
+                            stopwords = ['with', 'the', 'a', 'an', 'at', 'on', 'in', 'for']
+                            cleaned_words = [w for w in phrase.split() if w.lower() not in stopwords or w.lower() == keyword]
+                            phrase = " ".join(cleaned_words)
+                            
+                            if phrase:
+                                potential_names.append(phrase)
+                        except ValueError:
+                            pass
+                
+                # Try to find matching events
+                if potential_names:
+                    for potential_name in potential_names:
+                        matches = PersonalEventCRUD.find_event_by_name(user_id, potential_name, window_days=7)
+                        
+                        if matches:
+                            if len(matches) == 1:
+                                # Single match - answer with date/time
+                                event = matches[0]
+                                event_time = to_central(event.event_date)
+                                time_str = event_time.strftime("%B %d at %I:%M %p %Z")
+                                response_text = f"Your {event.title} is scheduled for {time_str}."
+                                
+                                if event.description:
+                                    response_text += f" {event.description}"
+                                
+                                # Save this simple interaction
+                                ConversationCRUD.save_conversation(
+                                    user_id=user_id,
+                                    message=user_message,
+                                    response=response_text,
+                                    conversation_type="event_lookup"
+                                )
+                                
+                                return {
+                                    "response": response_text,
+                                    "sentiment_score": 0.5,
+                                    "sentiment_label": "helpful",
+                                    "alert_sent": False,
+                                    "quick_actions": [],
+                                    "is_emergency": False
+                                }
+                            else:
+                                # Multiple matches - ask clarifier
+                                event_list = "\n".join([f"- {e.title} on {to_central(e.event_date).strftime('%B %d')}" 
+                                                      for e in matches[:3]])
+                                response_text = f"I found a few events. Which one did you mean?\n{event_list}"
+                                
+                                # Save this simple interaction
+                                ConversationCRUD.save_conversation(
+                                    user_id=user_id,
+                                    message=user_message,
+                                    response=response_text,
+                                    conversation_type="event_clarification"
+                                )
+                                
+                                return {
+                                    "response": response_text,
+                                    "sentiment_score": 0.5,
+                                    "sentiment_label": "helpful",
+                                    "alert_sent": False,
+                                    "quick_actions": [],
+                                    "is_emergency": False
+                                }
             
             # Check if this is a memory-specific query
             memory_query_keywords = ['remember', 'talked about', 'medication schedule', 

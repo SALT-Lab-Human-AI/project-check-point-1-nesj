@@ -1,0 +1,21 @@
+Files:
+app/memory/long_term_memory.py, app/memory/memory_manager.py, app/memory/episodic_memory.py, app/memory/structured_memory.py, app/agents/companion_agent.py, app/scheduling/reminder_scheduler.py, frontend/dashboard.py, app/api/routes.py
+1) Long-term quality
+• In long_term_memory.py: use a configurable SentenceTransformers embedding (default all-MiniLM-L6-v2; fallback to current). Enforce where={"user_id": …} on all add/search; standardize metadata {user_id,type,timestamp_utc,title,tags}. Add recency re-rank (≈30-day half-life) and return a mix: 2 summaries + 3–5 raw snippets.
+• In memory_manager.py: add is_vector_worthy(exchange) → only store confirmed facts, plans/commitments, health/med events, and episodic summaries; skip small talk.
+2) Deterministic “yesterday/day before”
+• In episodic_memory.py: add get_daily_summary(user_id, date_central) returning content only (summary text + key topics + date).
+• In memory_manager.py: add fetch_summary_for_relative_day(user_id, offset_days) using Central Time day boundaries.
+• In companion_agent.py: for “what did we talk about yesterday/day before”, bypass LLM formatting and return only the summary text + one “Key topics: …” line (no pleasantries).
+3) Dual-tier storage + hygiene
+• Nightly (and/or every 8–12 turns) create/update a daily episodic summary; store as type="summary". Keep only last 200 raw vectorized turns per user; dedupe by content hash. Implement in reminder_scheduler.py + memory_manager.py + long_term_memory.py.
+4) Reference repair
+• In structured_memory.py/crud.py: add get_upcoming_past_events(user_id, window_days=7) and find_event_by_name(user_id, name, window_days=7) (fuzzy).
+• In companion_agent.py: when message mentions partial entities (e.g., “meeting with Mary”), resolve via these helpers; if single match, answer with date/time; else ask one concise clarifier.
+ 
+Acceptance:
+– “What did we talk about yesterday?” → summary + one key-topics line, Central-time correct.
+– Small talk isn’t stored; facts/plans are. Recent items rank higher.
+– Daily summaries appear; raw turns capped/deduped.
+– Memory tab can list, delete, and export items.
+– Replies that used memory show a brief source hint.
