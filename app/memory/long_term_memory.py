@@ -45,7 +45,7 @@ class LongTermMemory:
         try:
             from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
             embedding_function = SentenceTransformerEmbeddingFunction(model_name=embedding_model)
-        except ImportError:
+        except (ImportError, ValueError):
             # Fallback to default embedding function
             embedding_function = None
             print(f"Using ChromaDB default embedding (sentence-transformers not available)")
