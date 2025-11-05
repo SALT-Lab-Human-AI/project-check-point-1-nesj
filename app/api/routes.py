@@ -1,10 +1,11 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Path, Query
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, validator
 from datetime import datetime
 from typing import List, Optional, Dict, Any
 from zoneinfo import ZoneInfo
 import json
+import logging
 
 from app.database.models import get_session, Session
 from app.database.crud import (
@@ -13,6 +14,9 @@ from app.database.crud import (
 )
 from app.agents.companion_agent import CompanionAgent
 from app.memory.conversation_store import ConversationMemoryStore
+from utils.timezone_utils import now_central
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Carely API", description="AI Companion for Elderly Care", version="1.0.0")
 
@@ -30,35 +34,35 @@ companion_agent = CompanionAgent()
 
 # Pydantic models for API requests
 class ChatMessage(BaseModel):
-    user_id: int
-    message: str
-    conversation_type: str = "general"
+    user_id: int = Field(..., gt=0, description="User ID must be positive")
+    message: str = Field(..., min_length=1, max_length=2000, description="Message content")
+    conversation_type: str = Field(default="general", max_length=50)
 
 class MedicationCreate(BaseModel):
-    user_id: int
-    name: str
-    dosage: str
-    frequency: str
-    schedule_times: List[str]
-    instructions: Optional[str] = None
+    user_id: int = Field(..., gt=0)
+    name: str = Field(..., min_length=1, max_length=200)
+    dosage: str = Field(..., min_length=1, max_length=100)
+    frequency: str = Field(..., min_length=1, max_length=100)
+    schedule_times: List[str] = Field(..., max_items=10)
+    instructions: Optional[str] = Field(None, max_length=500)
 
 class MedicationLog(BaseModel):
-    user_id: int
-    medication_id: int
-    status: str = "taken"
-    notes: Optional[str] = None
+    user_id: int = Field(..., gt=0)
+    medication_id: int = Field(..., gt=0)
+    status: str = Field(default="taken", max_length=50)
+    notes: Optional[str] = Field(None, max_length=500)
 
 class UserCreate(BaseModel):
-    name: str
-    email: Optional[str] = None
-    phone: Optional[str] = None
+    name: str = Field(..., min_length=1, max_length=200)
+    email: Optional[str] = Field(None, max_length=255)
+    phone: Optional[str] = Field(None, max_length=20)
     preferences: Optional[Dict[str, Any]] = None
-    emergency_contact: Optional[str] = None
+    emergency_contact: Optional[str] = Field(None, max_length=200)
 
 class CustomReminder(BaseModel):
-    user_id: int
-    title: str
-    message: str
+    user_id: int = Field(..., gt=0)
+    title: str = Field(..., min_length=1, max_length=200)
+    message: str = Field(..., min_length=1, max_length=1000)
     scheduled_time: datetime
 
 # Dependency to get database session
@@ -73,7 +77,7 @@ async def root():
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    return {"status": "healthy", "timestamp": datetime.now()}
+    return {"status": "healthy", "timestamp": now_central()}
 
 # User endpoints
 @app.post("/users/")
@@ -89,7 +93,8 @@ async def create_user(user: UserCreate):
         )
         return {"message": "User created successfully", "user_id": new_user.id}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error creating user: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create user")
 
 @app.get("/users/")
 async def get_all_users():
@@ -101,7 +106,7 @@ async def get_all_users():
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/users/{user_id}")
-async def get_user(user_id: int):
+async def get_user(user_id: int = Path(..., gt=0, description="User ID must be positive")):
     """Get user by ID"""
     try:
         user = UserCRUD.get_user(user_id)
@@ -193,7 +198,7 @@ async def log_medication_taken(log: MedicationLog):
         medication_log = MedicationLogCRUD.log_medication_taken(
             user_id=log.user_id,
             medication_id=log.medication_id,
-            scheduled_time=datetime.now(),
+            scheduled_time=now_central(),
             status=log.status,
             notes=log.notes
         )

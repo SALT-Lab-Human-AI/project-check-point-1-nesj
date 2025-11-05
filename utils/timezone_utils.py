@@ -32,8 +32,10 @@ def to_central(dt: datetime) -> datetime:
         Timezone-aware datetime in Central Time
     """
     if dt.tzinfo is None:
-        # Assume naive datetimes are UTC
-        dt = dt.replace(tzinfo=ZoneInfo("UTC"))
+        # Assume naive datetimes are already in Central Time (from database)
+        # since all our timestamps are saved with now_central()
+        dt = dt.replace(tzinfo=CENTRAL_TZ)
+        return dt
     return dt.astimezone(CENTRAL_TZ)
 
 

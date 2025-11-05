@@ -2,15 +2,20 @@ import os
 import json
 import re
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
 from utils.timezone_utils import now_central, to_central
 from typing import Dict, Any, List
 from groq import Groq
+
+# Load environment variables
+load_dotenv()
 from app.database.crud import (ConversationCRUD, MedicationCRUD,
                                MedicationLogCRUD, CaregiverAlertCRUD, UserCRUD,
                                PersonalEventCRUD)
 from utils.sentiment_analysis import analyze_sentiment
 from utils.emergency_detection import detect_emergency
 from app.memory.memory_manager import MemoryManager
+from utils.pii_redaction import PIIRedactor, sanitize_before_storage, generate_safe_response_prompt
 
 
 class CompanionAgent:
@@ -20,16 +25,48 @@ class CompanionAgent:
         self.model = "llama-3.3-70b-versatile"  # Using Groq model
         self.memory_manager = MemoryManager()  # Initialize memory system
 
-        # System prompt for elderly care companion
-        self.system_prompt = """You are Carely, a warm, empathetic AI companion for elderly care.
+    def _get_system_prompt(self) -> str:
+        """Generate system prompt with current time context"""
+        # Get current time in Central Time
+        current_time = now_central()
+        hour = current_time.hour
+        
+        # Determine time of day
+        if 5 <= hour < 12:
+            time_of_day = "morning"
+        elif 12 <= hour < 17:
+            time_of_day = "afternoon"
+        elif 17 <= hour < 21:
+            time_of_day = "evening"
+        else:
+            time_of_day = "night"
+        
+        # Format current time
+        time_str = current_time.strftime("%I:%M %p %Z")
+        
+        # System prompt for elderly care companion with time context
+        return f"""You are Carely, a warm, empathetic AI companion for elderly care.
+
+CURRENT TIME CONTEXT:
+- Current time: {time_str}
+- Time of day: {time_of_day}
+- User location: Chicago, IL (Central Time)
+
+ADAPTIVE RESPONSE STYLE:
+- Default to concise responses (~4 short sentences) for casual conversation and simple questions.
+- If the user asks for something complex, story-like, explanations, or multi-step instructions, provide a fuller, structured answer.
+- If unsure about the detail level needed, ask for clarification.
 
 CRITICAL RULES:
-1. Answer in ≤4 short sentences maximum. Be concise and direct.
-2. NO repetition, filler, or rambling. Every word must add value.
-3. If uncertain or missing information, ask EXACTLY 1 clarifying question.
-4. For time questions: use available tools/context to get local time. NEVER guess or make up times.
-5. For medications, schedules, and appointments: call tools or check database and quote results EXACTLY as provided.
-6. Warm, caring tone but BRIEF. Think of a caring friend who values your time.
+1. NO repetition, filler, or rambling. Every word must add value.
+2. If uncertain or missing information, ask EXACTLY 1 clarifying question.
+3. For time questions: use the current time provided above ({time_str}). NEVER guess or make up times.
+4. For medications, schedules, and appointments: call tools or check database and quote results EXACTLY as provided.
+5. Warm, caring tone. Think of a caring friend who adapts to your needs.
+6. DO NOT repeat greetings like "Good morning/afternoon/evening" in every message.
+7. DO NOT say "It's lovely to chat with you at [time]" repeatedly.
+8. Continue conversations naturally without re-introducing yourself or stating the time.
+9. Only greet the user at the very start of a new conversation, not in follow-up messages.
 
 YOUR ROLE:
 - Medication reminders and tracking
@@ -39,11 +76,12 @@ YOUR ROLE:
 - Remember personal details
 
 Be gentle, patient, and use simple everyday language. Never use medical jargon.
+Focus on continuing the conversation naturally, as if you're already in the middle of a friendly chat.
 """
 
     def _limit_to_sentences(self, text: str, max_sentences: int = 4) -> str:
         """
-        Limit text to at most max_sentences. If exceeds, reduce to first 3 concise sentences.
+        Limit text to at most max_sentences. If exceeds, reduce to fit max_sentences.
         """
         if not text:
             return text
@@ -57,8 +95,76 @@ Be gentle, patient, and use simple everyday language. Never use medical jargon.
         if len(sentences) <= max_sentences:
             return text
         
-        # If exceeds max_sentences, return first 3 sentences
-        return ' '.join(sentences[:3])
+        # If exceeds max_sentences, return first max_sentences
+        return ' '.join(sentences[:max_sentences])
+    
+    def _decide_verbosity(self, user_text: str) -> str:
+        """
+        Decide response verbosity level based on user intent and complexity.
+        Returns: "SHORT", "MEDIUM", or "LONG"
+        """
+        try:
+            # Use LLM to classify verbosity need
+            classification_prompt = f"""Analyze this user message and classify the required response detail level.
+
+User message: "{user_text}"
+
+Consider:
+- SHORT: casual chat, greetings, simple yes/no, quick factual answers, small talk
+- MEDIUM: moderate explanations, summaries, basic how-to, short reasoning
+- LONG: detailed instructions, multi-part questions, stories, complex explanations, step-by-step guides
+
+Respond ONLY with valid JSON in this exact format:
+{{"verbosity":"SHORT"}}
+or {{"verbosity":"MEDIUM"}}
+or {{"verbosity":"LONG"}}"""
+
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[{
+                    "role": "system",
+                    "content": "You are a verbosity classifier. Return only JSON."
+                }, {
+                    "role": "user",
+                    "content": classification_prompt
+                }],
+                temperature=0.1,
+                max_tokens=50)
+            
+            result_text = response.choices[0].message.content.strip()
+            
+            # Parse JSON response
+            result_json = json.loads(result_text)
+            verbosity = result_json.get("verbosity", "SHORT")
+            
+            # Validate
+            if verbosity in ["SHORT", "MEDIUM", "LONG"]:
+                return verbosity
+            else:
+                return "SHORT"
+                
+        except Exception as e:
+            # Fallback heuristic if LLM classification fails
+            text_lower = user_text.lower()
+            
+            # LONG indicators
+            long_indicators = ["step by step", "step-by-step", "explain", "tell me about", 
+                             "how do i", "how can i", "story", "describe", "what happened",
+                             "walk me through", "detail", "instruction"]
+            
+            # MEDIUM indicators  
+            medium_indicators = ["why", "how", "what is", "what are", "summary", 
+                               "summarize", "compare", "difference"]
+            
+            # Check for multiple questions (indicates complexity)
+            question_marks = user_text.count("?")
+            
+            if any(indicator in text_lower for indicator in long_indicators) or question_marks >= 2:
+                return "LONG"
+            elif any(indicator in text_lower for indicator in medium_indicators):
+                return "MEDIUM"
+            else:
+                return "SHORT"
 
     def get_conversation_context(self, user_id: int, limit: int = 5) -> str:
         """Get recent conversation context for memory"""
@@ -176,6 +282,242 @@ Be gentle, patient, and use simple everyday language. Never use medical jargon.
 
         except Exception as e:
             return "I had trouble sending the alert. Please contact your caregiver directly if this is urgent."
+
+    def _detect_user_intent(self, user_input: str) -> Dict[str, Any]:
+        """Use AI to detect what user wants to do"""
+        
+        prompt = f"""Analyze this user message and determine their intent:
+Message: "{user_input}"
+
+Possible intents:
+- log_medication: User is saying they took/will take medication
+- ask_schedule: User asking about their schedule or appointments
+- emergency: User needs urgent help or expressing pain/distress
+- mood_check: User expressing emotions or feelings
+- general_chat: Normal conversation
+
+Return JSON only:
+{{
+    "type": "intent_type",
+    "confidence": 0.95,
+    "reasoning": "brief explanation"
+}}"""
+        
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": "You are an intent classifier. Respond only with valid JSON."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.1,
+                max_tokens=150
+            )
+            
+            content = response.choices[0].message.content.strip()
+            return json.loads(content)
+            
+        except Exception as e:
+            # Fallback to keyword detection
+            user_lower = user_input.lower()
+            if any(word in user_lower for word in ["took", "taken", "take", "pill", "medication", "medicine"]):
+                return {"type": "log_medication", "confidence": 0.8, "reasoning": "keyword match"}
+            elif any(word in user_lower for word in ["schedule", "appointment", "calendar", "event"]):
+                return {"type": "ask_schedule", "confidence": 0.8, "reasoning": "keyword match"}
+            elif any(word in user_lower for word in ["help", "pain", "hurt", "emergency", "chest", "breathing"]):
+                return {"type": "emergency", "confidence": 0.8, "reasoning": "keyword match"}
+            else:
+                return {"type": "general_chat", "confidence": 0.7, "reasoning": "default"}
+
+    def _extract_medication_details(self, user_id: int, user_input: str) -> Dict[str, Any]:
+        """Extract which medication and any notes from natural language"""
+        
+        # Get user's medications
+        medications = MedicationCRUD.get_user_medications(user_id, active_only=True)
+        if not medications:
+            return {"medication_id": None, "medication_name": None, "notes": "", "confidence": 0.0}
+        
+        med_list = "\n".join([f"- {med.name} (ID: {med.id})" for med in medications])
+        
+        prompt = f"""User said: "{user_input}"
+
+Available medications:
+{med_list}
+
+Extract:
+1. Which medication they took (match to list above, use closest match if not exact)
+2. Any additional notes (side effects, timing, feelings, etc.)
+
+Return JSON only:
+{{
+    "medication_id": 1,
+    "medication_name": "name",
+    "notes": "extracted notes or empty string",
+    "confidence": 0.95
+}}"""
+        
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": "You are a medical information extractor. Respond only with valid JSON."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.1,
+                max_tokens=150
+            )
+            
+            content = response.choices[0].message.content.strip()
+            return json.loads(content)
+            
+        except Exception as e:
+            # Fallback: try to match medication name in user input
+            user_lower = user_input.lower()
+            for med in medications:
+                if med.name.lower() in user_lower:
+                    return {
+                        "medication_id": med.id,
+                        "medication_name": med.name,
+                        "notes": "",
+                        "confidence": 0.7
+                    }
+            
+            return {"medication_id": None, "medication_name": None, "notes": "", "confidence": 0.0}
+
+    def _get_pending_medications(self, user_id: int) -> List[Dict[str, Any]]:
+        """Get medications not yet taken today"""
+        current_time = now_central()
+        medications = MedicationCRUD.get_user_medications(user_id, active_only=True)
+        
+        pending = []
+        for med in medications:
+            try:
+                schedule_times = json.loads(med.schedule_times) if med.schedule_times else []
+                for time_str in schedule_times:
+                    hour, minute = map(int, time_str.split(':'))
+                    scheduled_time = current_time.replace(hour=hour, minute=minute, second=0, microsecond=0)
+                    
+                    # Check if time has passed and not logged
+                    if scheduled_time <= current_time:
+                        # Check if already logged
+                        recent_log = MedicationLogCRUD.check_recent_medication_log(
+                            user_id=user_id,
+                            medication_id=med.id,
+                            hours=6
+                        )
+                        if not recent_log:
+                            pending.append({
+                                "medication": med,
+                                "scheduled_time": scheduled_time,
+                                "time_str": time_str
+                            })
+                            break  # Only add once per medication
+            except Exception:
+                continue
+        
+        return pending
+
+    def generate_proactive_greeting(self, user_id: int) -> str:
+        """Generate a contextual proactive greeting when user opens chat"""
+        current_time = now_central()
+        hour = current_time.hour
+        
+        # Determine time of day
+        if 5 <= hour < 12:
+            time_of_day = "morning"
+            greeting = "Good morning"
+        elif 12 <= hour < 17:
+            time_of_day = "afternoon"
+            greeting = "Good afternoon"
+        elif 17 <= hour < 21:
+            time_of_day = "evening"
+            greeting = "Good evening"
+        else:
+            time_of_day = "night"
+            greeting = "Good evening"
+        
+        # Get user context
+        user = UserCRUD.get_user(user_id)
+        recent_convs = ConversationCRUD.get_user_conversations(user_id, limit=3)
+        pending_meds = self._get_pending_medications(user_id)
+        
+        # Get upcoming events today
+        try:
+            from app.database.models import PersonalEvent, get_session
+            from sqlmodel import select
+            
+            with get_session() as session:
+                today_start = current_time.replace(hour=0, minute=0, second=0, microsecond=0)
+                today_end = today_start + timedelta(days=1)
+                
+                query = select(PersonalEvent).where(
+                    PersonalEvent.user_id == user_id,
+                    PersonalEvent.event_date.isnot(None)
+                )
+                all_events = session.exec(query).all()
+                
+                upcoming_events = []
+                for event in all_events:
+                    event_time = to_central(event.event_date)
+                    if today_start <= event_time < today_end and event_time >= current_time:
+                        upcoming_events.append(event)
+        except Exception:
+            upcoming_events = []
+        
+        # Build context for AI
+        recent_mood = "unknown"
+        if recent_convs and recent_convs[0].sentiment_score is not None:
+            score = recent_convs[0].sentiment_score
+            if score > 0.3:
+                recent_mood = "positive"
+            elif score < -0.3:
+                recent_mood = "negative"
+            else:
+                recent_mood = "neutral"
+        
+        context = f"""Generate a brief, warm, proactive greeting (2-3 sentences) for {user.name}.
+
+Current context:
+- Time: {current_time.strftime('%I:%M %p')} {time_of_day}
+- Recent mood: {recent_mood}
+- Pending medications today: {len(pending_meds)}
+- Upcoming events today: {len(upcoming_events)}
+
+Guidelines:
+1. Start with appropriate time-based greeting ({greeting})
+2. If there are pending medications or upcoming events, mention ONE of them briefly
+3. Ask how they're doing or offer help
+4. Keep it warm, natural, and conversational
+5. Do NOT sound robotic or repetitive
+
+Example good greetings:
+- "Good morning, Dorothy! ☀️ I see you have your blood pressure medication due soon. How are you feeling today?"
+- "Good afternoon! Hope you're having a nice day. Just a reminder you have an appointment later. Need anything?"
+- "Good evening! How has your day been? I'm here if you need to chat or check your schedule."
+
+Generate greeting:"""
+        
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": self._get_system_prompt()},
+                    {"role": "user", "content": context}
+                ],
+                temperature=0.7,
+                max_tokens=150
+            )
+            
+            return response.choices[0].message.content.strip()
+            
+        except Exception as e:
+            # Fallback greeting
+            if pending_meds:
+                return f"{greeting}, {user.name}! I see you have {len(pending_meds)} medication{'s' if len(pending_meds) > 1 else ''} due today. How are you feeling?"
+            elif upcoming_events:
+                return f"{greeting}, {user.name}! You have {len(upcoming_events)} event{'s' if len(upcoming_events) > 1 else ''} scheduled today. Need anything?"
+            else:
+                return f"{greeting}, {user.name}! How are you doing today? I'm here to help with anything you need. 😊"
 
     def determine_quick_actions(self, user_message: str, user_id: int) -> List[str]:
         """Determine 2-3 relevant quick action buttons based on context"""
@@ -470,13 +812,22 @@ Be gentle, patient, and use simple everyday language. Never use medical jargon.
                     "is_emergency": False
                 }
             
-            # SECOND: Check if this is a current time query (handle without LLM)
+            # SECOND: Check if this is a current time/date query (handle without LLM)
             # Exclude medication-related queries by checking they're not about meds/pills/dose
             time_query_keywords = ['time now', 'current time', 'what\'s the time', 
-                                   'tell me the time', 'time is it']
-            # Only match if not asking about medication
+                                   'tell me the time', 'time is it', 'what is the time',
+                                   'what time is', 'what\'s time']
+            date_query_keywords = ['what is the date', 'what\'s the date', 'what date',
+                                   'what day is it', 'what\'s the day', 'what is the day',
+                                   'date today', 'day today', 'today\'s date']
+            datetime_query_keywords = ['day, time and date', 'date and time', 'time and date',
+                                       'day and time', 'time, date', 'date, time']
+            
+            # Check if asking about date and/or time (not medication-related)
+            is_datetime_query = any(keyword in message_lower for keyword in datetime_query_keywords)
             is_time_query = (any(keyword in message_lower for keyword in time_query_keywords) and
                            not any(med_word in message_lower for med_word in ['med', 'pill', 'dose', 'medication']))
+            is_date_query = any(keyword in message_lower for keyword in date_query_keywords)
             
             # Also handle "what time" if it's clearly about current time, not meds
             if 'what time' in message_lower and not is_med_timing_query:
@@ -484,11 +835,27 @@ Be gentle, patient, and use simple everyday language. Never use medical jargon.
                 if any(phrase in message_lower for phrase in ['what time is it', 'what time it is']):
                     is_time_query = True
             
-            if is_time_query:
+            # Handle date/time queries deterministically
+            if is_datetime_query or is_time_query or is_date_query:
                 # Get current time using timezone utility
                 current_time = now_central()
-                time_str = current_time.strftime("%I:%M %p %Z")
-                time_response = f"It's {time_str} right now."
+                
+                # Build appropriate response based on what was asked
+                if is_datetime_query:
+                    # Full date and time
+                    day_name = current_time.strftime("%A")  # e.g., "Friday"
+                    time_str = current_time.strftime("%I:%M %p %Z")  # e.g., "8:15 PM CST"
+                    date_str = current_time.strftime("%B %d, %Y")  # e.g., "November 1, 2025"
+                    time_response = f"It's currently {time_str} on {day_name}, {date_str}."
+                elif is_date_query:
+                    # Just date
+                    day_name = current_time.strftime("%A")
+                    date_str = current_time.strftime("%B %d, %Y")
+                    time_response = f"Today is {day_name}, {date_str}."
+                else:
+                    # Just time
+                    time_str = current_time.strftime("%I:%M %p %Z")
+                    time_response = f"It's {time_str} right now."
                 
                 # Save this simple interaction
                 ConversationCRUD.save_conversation(
@@ -507,7 +874,74 @@ Be gentle, patient, and use simple everyday language. Never use medical jargon.
                     "is_emergency": False
                 }
             
-            # THIRD: Deterministic "yesterday/day before" summary handling
+            # THIRD: AI-Driven Medication Logging Detection
+            # Detect if user is trying to log medication through natural conversation
+            intent = self._detect_user_intent(user_message)
+            
+            if intent["type"] == "log_medication" and intent["confidence"] > 0.7:
+                # Extract medication details using AI
+                med_details = self._extract_medication_details(user_id, user_message)
+                
+                if med_details["medication_id"] and med_details["confidence"] > 0.6:
+                    # Automatically log the medication
+                    log_result = self.log_medication_tool(
+                        user_id=user_id,
+                        medication_id=med_details["medication_id"],
+                        notes=med_details["notes"]
+                    )
+                    
+                    # Generate a natural response
+                    response_text = log_result
+                    
+                    # Save conversation
+                    ConversationCRUD.save_conversation(
+                        user_id=user_id,
+                        message=user_message,
+                        response=response_text,
+                        conversation_type="medication_logging"
+                    )
+                    
+                    return {
+                        "response": response_text,
+                        "sentiment_score": 0.5,
+                        "sentiment_label": "positive",
+                        "alert_sent": False,
+                        "quick_actions": [],
+                        "is_emergency": False,
+                        "action_taken": "medication_logged",
+                        "medication_id": med_details["medication_id"]
+                    }
+                elif med_details["confidence"] <= 0.6 and med_details["medication_id"]:
+                    # Low confidence, ask for confirmation
+                    response_text = f"Just to confirm - did you take your {med_details['medication_name']}? I can log that for you."
+                    
+                    return {
+                        "response": response_text,
+                        "sentiment_score": 0.5,
+                        "sentiment_label": "neutral",
+                        "alert_sent": False,
+                        "quick_actions": ["log_medication"],
+                        "is_emergency": False
+                    }
+                else:
+                    # Couldn't identify medication, ask which one
+                    medications = MedicationCRUD.get_user_medications(user_id, active_only=True)
+                    if medications:
+                        med_list = ", ".join([med.name for med in medications[:3]])
+                        response_text = f"I'd be happy to log your medication! Which one did you take? Your medications include: {med_list}."
+                    else:
+                        response_text = "I'd love to help log your medication, but I don't see any medications in your schedule. Would you like to add one?"
+                    
+                    return {
+                        "response": response_text,
+                        "sentiment_score": 0.5,
+                        "sentiment_label": "helpful",
+                        "alert_sent": False,
+                        "quick_actions": ["log_medication"],
+                        "is_emergency": False
+                    }
+            
+            # FOURTH: Deterministic "yesterday/day before" summary handling
             # Broaden detection to cover common phrasings
             yesterday_keywords = ['yesterday', 'day before yesterday', 'two days ago']
             is_yesterday_query = any(keyword in message_lower for keyword in yesterday_keywords)
@@ -549,7 +983,7 @@ Be gentle, patient, and use simple everyday language. Never use medical jargon.
                     "is_emergency": False
                 }
             
-            # FOURTH: Partial entity resolution (e.g., "meeting with Mary")
+            # FIFTH: Partial entity resolution (e.g., "meeting with Mary")
             # Check if message mentions partial event names
             event_mention_keywords = ['meeting', 'appointment', 'doctor', 'event', 'visit']
             has_event_mention = any(keyword in message_lower for keyword in event_mention_keywords)
@@ -696,12 +1130,31 @@ Be gentle, patient, and use simple everyday language. Never use medical jargon.
             if is_emergency:
                 emergency_context = "\nIMPORTANT: The user is experiencing emergency symptoms. Provide immediate reassurance and comfort."
 
+            # Decide verbosity level based on user intent
+            verbosity_level = self._decide_verbosity(user_message)
+            
+            # Set parameters based on verbosity
+            if verbosity_level == "SHORT":
+                max_tokens = 220
+                sentence_limit = 4
+            elif verbosity_level == "MEDIUM":
+                max_tokens = 600
+                sentence_limit = 8
+            else:  # LONG
+                max_tokens = 1200
+                sentence_limit = None  # No sentence limit for detailed responses
+            
+            # Check for PII in user message BEFORE sending to AI
+            detected_pii = PIIRedactor.detect_pii(user_message)
+            pii_privacy_notice = generate_safe_response_prompt(detected_pii) if detected_pii else ""
+            
             # Build the prompt with comprehensive memory context
             prompt = f"""{memory_context}
 
 User's name: {user_name}
 Conversation type: {conversation_type}
 Current message: {user_message}{emergency_context}
+{pii_privacy_notice}
 
 Please respond as Carely, keeping in mind:
 - The user's profile, medications, and preferences from the context above
@@ -715,35 +1168,46 @@ Please respond as Carely, keeping in mind:
 
 Respond naturally and warmly based on ALL the context provided."""
 
-            # Generate response
+            # Generate response with dynamic max_tokens
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[{
                     "role": "system",
-                    "content": self.system_prompt
+                    "content": self._get_system_prompt()
                 }, {
                     "role": "user",
                     "content": prompt
                 }],
                 temperature=0.3,
-                max_tokens=230,
+                max_tokens=max_tokens,
                 stop=["\n\n", "\n\n\n"])
 
             ai_response = response.choices[0].message.content
             
-            # Post-trim: limit to at most 4 short sentences
-            ai_response = self._limit_to_sentences(ai_response, max_sentences=4)
+            # Apply dynamic sentence limiting (only for SHORT and MEDIUM)
+            if sentence_limit:
+                ai_response = self._limit_to_sentences(ai_response, max_sentences=sentence_limit)
             
             # If emergency, prepend reassurance message
             if is_emergency:
                 reassurance = "I'm here with you. I'm notifying your caregiver now so help can reach you quickly. Try to sit comfortably and focus on slow breaths. You're not alone.\n\n"
                 ai_response = reassurance + ai_response
 
-            # Save conversation to database
+            # PII/PHI Detection and Redaction before storage
+            user_msg_redacted, ai_response_redacted, contains_pii, pii_warning = sanitize_before_storage(
+                user_message, ai_response
+            )
+            
+            # If PII was detected, append warning to response (for user to see)
+            ai_response_display = ai_response
+            if contains_pii:
+                ai_response_display = ai_response + "\n\n" + pii_warning
+
+            # Save conversation to database with REDACTED versions
             conversation = ConversationCRUD.save_conversation(
                 user_id=user_id,
-                message=user_message,
-                response=ai_response,
+                message=user_msg_redacted,  # Store redacted version
+                response=ai_response_redacted,  # Store redacted version
                 sentiment_score=sentiment_score,
                 sentiment_label=sentiment_label,
                 conversation_type=conversation_type)
@@ -773,7 +1237,7 @@ Respond naturally and warmly based on ALL the context provided."""
             quick_actions = self.determine_quick_actions(user_message, user_id)
             
             return {
-                "response": ai_response,
+                "response": ai_response_display,  # Return display version with PII warning
                 "sentiment_score": sentiment_score,
                 "sentiment_label": sentiment_label,
                 "alert_sent": alert_sent,
@@ -782,7 +1246,8 @@ Respond naturally and warmly based on ALL the context provided."""
                 "emergency_severity": emergency_severity,
                 "emergency_concerns": emergency_concerns,
                 "should_alert": should_alert,
-                "quick_actions": quick_actions
+                "quick_actions": quick_actions,
+                "contains_pii": contains_pii  # Flag for UI to show warning
             }
 
         except Exception as e:

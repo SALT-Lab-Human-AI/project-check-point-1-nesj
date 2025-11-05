@@ -3,10 +3,13 @@ from datetime import datetime, timedelta
 from utils.timezone_utils import now_central, start_of_day_central
 from typing import List, Optional, Dict
 import json
+import logging
 from app.database.models import (
     get_session, User, Medication, Conversation, Reminder, 
     MedicationLog, CaregiverAlert, CaregiverPatientAssignment, PersonalEvent
 )
+
+logger = logging.getLogger(__name__)
 
 class UserCRUD:
     @staticmethod
@@ -18,8 +21,8 @@ class UserCRUD:
             preferences_json = json.dumps(preferences) if preferences else None
             password_hash = None
             if password:
-                import hashlib
-                password_hash = hashlib.sha256(password.encode()).hexdigest()
+                from app.auth.auth_utils import hash_password
+                password_hash = hash_password(password)
             
             user = User(
                 name=name,

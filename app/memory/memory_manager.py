@@ -6,11 +6,14 @@ Provides a single interface for context-aware, personalized responses
 
 from typing import Dict, List, Optional
 from datetime import datetime
+import logging
 
 from app.memory.short_term_memory import ShortTermMemory
 from app.memory.long_term_memory import LongTermMemory
 from app.memory.episodic_memory import EpisodicMemory
 from app.memory.structured_memory import StructuredMemory
+
+logger = logging.getLogger(__name__)
 
 
 class MemoryManager:
@@ -38,11 +41,16 @@ class MemoryManager:
             True if worthy of vector storage
         """
         combined = f"{user_message} {assistant_response}".lower()
-        
-        # Skip small talk greetings
-        small_talk = ['hi', 'hello', 'bye', 'goodbye', 'thank', 'thanks', 'okay', 'ok']
         words = combined.split()
-        if len(words) <= 3 and any(word in combined for word in small_talk):
+        
+        # Skip very short exchanges (greetings, acknowledgments)
+        small_talk = ['hi', 'hello', 'bye', 'goodbye', 'thank', 'thanks', 'okay', 'ok', 
+                     'yes', 'no', 'sure', 'alright']
+        if len(words) <= 5 and any(word in combined for word in small_talk):
+            return False
+        
+        # Skip if both message and response are trivially short
+        if len(user_message.split()) < 4 and len(assistant_response.split()) < 6:
             return False
         
         # Store if it contains confirmed facts, plans, commitments
@@ -97,7 +105,7 @@ class MemoryManager:
                     self.long_term.deduplicate_by_hash(user_id)
                     self.long_term.cleanup_old_conversations(user_id, max_conversations=200)
         except Exception as e:
-            print(f"Warning: Could not add conversation to vector store: {e}")
+            logger.warning(f"Could not add conversation to vector store: {e}")
 
     def get_full_context(self, user_id: int, current_query: str) -> str:
         """
@@ -135,7 +143,7 @@ class MemoryManager:
                 context_parts.append(similar_context)
         except Exception as e:
             # Gracefully handle vector store errors
-            print(f"Warning: Long-term memory retrieval failed: {e}")
+            logger.warning(f"Long-term memory retrieval failed: {e}")
 
         return "\n".join(context_parts)
 
@@ -296,7 +304,7 @@ class MemoryManager:
         try:
             self.long_term.add_summary(user_id, summary_text, date)
         except Exception as e:
-            print(f"Warning: Could not add summary to vector store: {e}")
+            logger.warning(f"Could not add summary to vector store: {e}")
 
     def add_profile_fact(self,
                          user_id: int,
@@ -313,7 +321,7 @@ class MemoryManager:
         try:
             self.long_term.add_profile_fact(user_id, fact, fact_type)
         except Exception as e:
-            print(f"Warning: Could not add profile fact to vector store: {e}")
+            logger.warning(f"Could not add profile fact to vector store: {e}")
     
     def fetch_summary_for_relative_day(self, user_id: int, offset_days: int) -> Optional[Dict]:
         """

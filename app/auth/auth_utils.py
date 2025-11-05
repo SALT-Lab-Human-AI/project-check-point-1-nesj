@@ -5,12 +5,30 @@ from app.database.models import User, get_session
 from sqlmodel import select
 
 def hash_password(password: str) -> str:
-    """Hash a password using SHA-256"""
-    return hashlib.sha256(password.encode()).hexdigest()
+    """
+    Hash a password using PBKDF2-SHA256 with salt
+    Returns: salt$hash format for storage
+    """
+    # Generate a random salt
+    salt = secrets.token_hex(32)
+    # Use PBKDF2 with 100000 iterations (OWASP recommended minimum)
+    pwd_hash = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt.encode('utf-8'), 100000)
+    return f"{salt}${pwd_hash.hex()}"
 
 def verify_password(password: str, password_hash: str) -> bool:
-    """Verify a password against its hash"""
-    return hash_password(password) == password_hash
+    """Verify a password against its salted hash"""
+    try:
+        # Handle legacy SHA-256 hashes (backwards compatibility)
+        if '$' not in password_hash:
+            # Legacy format - still verify but should be migrated
+            return hashlib.sha256(password.encode()).hexdigest() == password_hash
+        
+        # New format: salt$hash
+        salt, stored_hash = password_hash.split('$')
+        pwd_hash = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt.encode('utf-8'), 100000)
+        return pwd_hash.hex() == stored_hash
+    except Exception:
+        return False
 
 def authenticate_user(email: str, password: str) -> Optional[User]:
     """Authenticate a user by email and password"""
