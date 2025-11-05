@@ -2,6 +2,10 @@ import os
 import json
 from groq import Groq
 from typing import Dict, Any
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 class SentimentAnalyzer:
     def __init__(self):
@@ -136,12 +140,23 @@ class SentimentAnalyzer:
 
 # Global instance for easy access
 _analyzer = None
+_analyzer_lock = None
 
 def get_analyzer():
-    """Get singleton sentiment analyzer instance"""
-    global _analyzer
+    """Get singleton sentiment analyzer instance (thread-safe)"""
+    global _analyzer, _analyzer_lock
+    
     if _analyzer is None:
-        _analyzer = SentimentAnalyzer()
+        # Initialize lock if needed
+        if _analyzer_lock is None:
+            import threading
+            _analyzer_lock = threading.Lock()
+        
+        # Thread-safe singleton initialization
+        with _analyzer_lock:
+            if _analyzer is None:  # Double-check after acquiring lock
+                _analyzer = SentimentAnalyzer()
+    
     return _analyzer
 
 def analyze_sentiment(text: str) -> Dict[str, Any]:

@@ -7,6 +7,7 @@ import os
 import uuid
 import hashlib
 import math
+import logging
 from typing import List, Dict, Optional
 from datetime import datetime, timedelta
 
@@ -14,6 +15,8 @@ import chromadb
 from chromadb.config import Settings
 from utils.timezone_utils import now_central
 from app.database.crud import ConversationCRUD
+
+logger = logging.getLogger(__name__)
 
 
 class LongTermMemory:
@@ -48,7 +51,7 @@ class LongTermMemory:
         except (ImportError, ValueError):
             # Fallback to default embedding function
             embedding_function = None
-            print(f"Using ChromaDB default embedding (sentence-transformers not available)")
+            logger.info("Using ChromaDB default embedding (sentence-transformers not available)")
         
         # Get or create collection with configured embedding function
         self.collection = self.client.get_or_create_collection(
@@ -91,7 +94,7 @@ class LongTermMemory:
             
             # Standardized metadata
             metadata = {
-                "user_id": user_id,
+                "user_id": str(user_id),  # Store as string for ChromaDB consistency
                 "type": "conversation",
                 "timestamp_utc": timestamp.isoformat(),
                 "title": title or f"Conversation {conversation_id}",
@@ -110,7 +113,7 @@ class LongTermMemory:
             )
             
         except Exception as e:
-            print(f"Error adding conversation to vector store: {e}")
+            logger.error(f"Error adding conversation to vector store: {e}")
     
     def add_summary(self, user_id: int, summary_text: str, date: datetime, 
                    key_topics: List[str] = None) -> None:
@@ -132,7 +135,7 @@ class LongTermMemory:
             
             # Standardized metadata for summaries
             metadata = {
-                "user_id": user_id,
+                "user_id": str(user_id),  # Store as string for ChromaDB consistency
                 "type": "summary",
                 "timestamp_utc": date.isoformat(),
                 "title": f"Daily Summary {date.strftime('%Y-%m-%d')}",
@@ -148,7 +151,7 @@ class LongTermMemory:
             )
             
         except Exception as e:
-            print(f"Error adding summary to vector store: {e}")
+            logger.error(f"Error adding summary to vector store: {e}")
     
     def add_profile_fact(self, user_id: int, fact: str, fact_type: str = "general", 
                         tags: List[str] = None) -> None:
@@ -166,7 +169,7 @@ class LongTermMemory:
             
             # Standardized metadata
             metadata = {
-                "user_id": user_id,
+                "user_id": str(user_id),  # Store as string for ChromaDB consistency
                 "type": "profile_fact",
                 "timestamp_utc": now_central().isoformat(),
                 "title": f"{fact_type.replace('_', ' ').title()} fact",
@@ -182,7 +185,7 @@ class LongTermMemory:
             )
             
         except Exception as e:
-            print(f"Error adding profile fact to vector store: {e}")
+            logger.error(f"Error adding profile fact to vector store: {e}")
     
     def _calculate_recency_score(self, timestamp_str: str, half_life_days: float = 30.0) -> float:
         """
@@ -223,7 +226,7 @@ class LongTermMemory:
             results = self.collection.query(
                 query_texts=[query],
                 n_results=min(top_k * 3, 30),
-                where={"user_id": user_id}
+                where={"user_id": str(user_id)}  # Ensure string for ChromaDB filtering
             )
             
             if not results or not results['ids'] or not results['ids'][0]:
@@ -301,7 +304,7 @@ class LongTermMemory:
             return final_items[:top_k]
             
         except Exception as e:
-            print(f"Error retrieving similar conversations: {e}")
+            logger.error(f"Error retrieving similar conversations: {e}")
             return []
     
     def get_formatted_similar_context(self, query: str, user_id: int, 
@@ -365,10 +368,10 @@ class LongTermMemory:
                 )
             
             self.last_update = now_central()
-            print(f"Indexed {len(conversations)} conversations for user {user_id}")
+            logger.info(f"Indexed {len(conversations)} conversations for user {user_id}")
             
         except Exception as e:
-            print(f"Error building memory index: {e}")
+            logger.error(f"Error building memory index: {e}")
     
     def deduplicate_by_hash(self, user_id: int) -> int:
         """
@@ -383,7 +386,7 @@ class LongTermMemory:
         try:
             # Get all items for this user
             results = self.collection.get(
-                where={"user_id": user_id}
+                where={"user_id": str(user_id)}  # Ensure string for ChromaDB filtering
             )
             
             if not results or not results['ids']:
@@ -407,12 +410,12 @@ class LongTermMemory:
             # Delete duplicates
             if duplicates:
                 self.collection.delete(ids=duplicates)
-                print(f"Removed {len(duplicates)} duplicate entries for user {user_id}")
+                logger.info(f"Removed {len(duplicates)} duplicate entries for user {user_id}")
             
             return len(duplicates)
             
         except Exception as e:
-            print(f"Error deduplicating memory: {e}")
+            logger.error(f"Error deduplicating memory: {e}")
             return 0
     
     def cleanup_old_conversations(self, user_id: int, max_conversations: int = 200) -> int:
@@ -431,7 +434,7 @@ class LongTermMemory:
             # Get all conversations for this user
             results = self.collection.get(
                 where={
-                    "user_id": user_id,
+                    "user_id": str(user_id),  # Ensure string for ChromaDB filtering
                     "type": "conversation"
                 }
             )
@@ -462,13 +465,13 @@ class LongTermMemory:
                 old_ids = [c['id'] for c in old_conversations]
                 
                 self.collection.delete(ids=old_ids)
-                print(f"Removed {len(old_ids)} old conversations for user {user_id}")
+                logger.info(f"Removed {len(old_ids)} old conversations for user {user_id}")
                 return len(old_ids)
             
             return 0
             
         except Exception as e:
-            print(f"Error cleaning up old conversations: {e}")
+            logger.error(f"Error cleaning up old conversations: {e}")
             return 0
     
     def get_user_memory_items(self, user_id: int, memory_type: str = None, 
@@ -485,7 +488,7 @@ class LongTermMemory:
             List of memory items with metadata
         """
         try:
-            where_clause = {"user_id": user_id}
+            where_clause = {"user_id": str(user_id)}  # Ensure string for ChromaDB filtering
             if memory_type:
                 where_clause["type"] = memory_type
             
@@ -517,7 +520,7 @@ class LongTermMemory:
             return items
             
         except Exception as e:
-            print(f"Error listing memory items: {e}")
+            logger.error(f"Error listing memory items: {e}")
             return []
     
     def delete_memory_item(self, doc_id: str) -> bool:
@@ -534,7 +537,7 @@ class LongTermMemory:
             self.collection.delete(ids=[doc_id])
             return True
         except Exception as e:
-            print(f"Error deleting memory item: {e}")
+            logger.error(f"Error deleting memory item: {e}")
             return False
     
     def clear_user_memory(self, user_id: int):
@@ -547,12 +550,12 @@ class LongTermMemory:
         try:
             # Query all documents for this user
             results = self.collection.get(
-                where={"user_id": user_id}
+                where={"user_id": str(user_id)}  # Ensure string for ChromaDB filtering
             )
             
             if results and results['ids']:
                 self.collection.delete(ids=results['ids'])
-                print(f"Cleared {len(results['ids'])} memory items for user {user_id}")
+                logger.info(f"Cleared {len(results['ids'])} memory items for user {user_id}")
                 
         except Exception as e:
-            print(f"Error clearing user memory: {e}")
+            logger.error(f"Error clearing user memory: {e}")

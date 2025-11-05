@@ -2,6 +2,10 @@ from utils.timezone_utils import now_central
 import os
 import requests
 from typing import Dict, Any, Optional
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 class TelegramNotifier:
     def __init__(self):

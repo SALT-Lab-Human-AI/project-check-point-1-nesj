@@ -5,6 +5,10 @@ from typing import Dict, Any
 import json
 import re
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 class EmergencyDetector:
     EMERGENCY_KEYWORDS = [
