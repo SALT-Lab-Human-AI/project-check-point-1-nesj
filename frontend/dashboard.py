@@ -1513,6 +1513,10 @@ def show_chat_interface(user_id: int):
     # Initialize pending_action for Quick Actions
     if 'pending_action' not in st.session_state:
         st.session_state.pending_action = None
+    
+    # Initialize flag for expecting medication name input
+    if 'expecting_medication_name' not in st.session_state:
+        st.session_state.expecting_medication_name = False
 
     # Initialize proactive greeting flag
     if 'proactive_greeting_sent' not in st.session_state:
@@ -1672,22 +1676,32 @@ def show_chat_interface(user_id: int):
         st.session_state.pending_action = None
 
         if action == "log_medication":
-            # Find the most recent reminder with medication_id
-            medication_id = None
-            for msg in reversed(st.session_state.chat_history):
-                if msg.get("reminder_id") and msg.get("medication_id"):
-                    medication_id = msg.get("medication_id")
-                    break
-
-            # Log medication with duplicate detection
-            response_text = st.session_state.companion_agent.log_medication_tool(
-                user_id=user_id, medication_id=medication_id)
-            st.session_state.chat_history.append({
-                "role": "assistant",
-                "content": response_text,
-                "timestamp": now_central(),
-                "quick_actions": []
-            })
+            # Get user's medications to let them choose
+            medications = MedicationCRUD.get_user_medications(user_id, active_only=True)
+            
+            if medications:
+                # Show medication selection prompt
+                med_list = ", ".join([med.name for med in medications])
+                response_text = f"Please specify which medication you took. Your medications include: {med_list}"
+                
+                st.session_state.chat_history.append({
+                    "role": "assistant",
+                    "content": response_text,
+                    "timestamp": now_central(),
+                    "quick_actions": []
+                })
+                
+                # Set flag to expect medication name in next input
+                st.session_state.expecting_medication_name = True
+            else:
+                response_text = "I don't see any medications in your schedule. Would you like to add one?"
+                st.session_state.chat_history.append({
+                    "role": "assistant",
+                    "content": response_text,
+                    "timestamp": now_central(),
+                    "quick_actions": []
+                })
+            
             st.rerun()
 
         elif action == "play_music":
@@ -1851,47 +1865,99 @@ def show_chat_interface(user_id: int):
         with st.chat_message("user"):
             st.write(display_message)
 
-        # Generate AI response
-        with st.chat_message("assistant", avatar="🏥"):
-            with st.spinner("Carely is thinking..."):
-                response_data = st.session_state.companion_agent.generate_response(
-                    user_id=user_id, user_message=prompt)
+        # Check if we're expecting a medication name (from "Log Medication" button)
+        if st.session_state.get("expecting_medication_name", False):
+            st.session_state.expecting_medication_name = False
+            
+            # Try to find the medication by name
+            medications = MedicationCRUD.get_user_medications(user_id, active_only=True)
+            medication_id = None
+            medication_name = None
+            
+            # Case-insensitive search
+            prompt_lower = prompt.lower().strip()
+            for med in medications:
+                if prompt_lower in med.name.lower() or med.name.lower() in prompt_lower:
+                    medication_id = med.id
+                    medication_name = med.name
+                    break
+            
+            # Generate response
+            with st.chat_message("assistant", avatar="🏥"):
+                if medication_id:
+                    # Log the medication
+                    with st.spinner("Logging your medication..."):
+                        log_result = st.session_state.companion_agent.log_medication_tool(
+                            user_id=user_id,
+                            medication_id=medication_id
+                        )
+                    
+                    st.write(log_result)
+                    response_text = log_result
+                else:
+                    # Medication not found
+                    med_list = ", ".join([med.name for med in medications[:5]])
+                    response_text = f"I couldn't find '{prompt}' in your medication list. Your medications are: {med_list}. Could you try again?"
+                    st.write(response_text)
+                    st.session_state.expecting_medication_name = True  # Ask again
+            
+            # Update chat history
+            st.session_state.chat_history.append({
+                "role": "user",
+                "content": display_message,
+                "timestamp": now_central()
+            })
+            st.session_state.chat_history.append({
+                "role": "assistant",
+                "content": response_text,
+                "timestamp": now_central(),
+                "quick_actions": []
+            })
+        else:
+            # Normal conversation flow
+            # Generate AI response
+            with st.chat_message("assistant", avatar="🏥"):
+                with st.spinner("Carely is thinking..."):
+                    response_data = st.session_state.companion_agent.generate_response(
+                        user_id=user_id, user_message=prompt)
 
-            st.write(response_data["response"])
+                st.write(response_data["response"])
 
-            # Show sentiment if available
-            if response_data.get("sentiment_score") is not None:
-                sentiment_emoji = get_sentiment_emoji(
-                    response_data["sentiment_score"])
-                st.caption(
-                    f"Detected mood: {sentiment_emoji} {response_data['sentiment_label']}"
-                )
+                st.write(response_data["response"])
 
-        # Update session state
-        st.session_state.chat_history.append({
-            "role": "user",
-            "content": display_message,
-            "timestamp": now_central()
-        })
-        st.session_state.chat_history.append({
-            "role":
-            "assistant",
-            "content":
-            response_data["response"],
-            "timestamp":
-            now_central(),
-            "quick_actions":
-            response_data.get("quick_actions", [])
-        })
+                # Show sentiment if available
+                if response_data.get("sentiment_score") is not None:
+                    sentiment_emoji = get_sentiment_emoji(
+                        response_data["sentiment_score"])
+                    st.caption(
+                        f"Detected mood: {sentiment_emoji} {response_data['sentiment_label']}"
+                    )
 
-        # Check for emergency
-        if response_data.get("is_emergency") and not st.session_state.get(
-                "emergency_handled"):
-            st.session_state.emergency_data = {
-                "concerns": response_data.get("emergency_concerns", []),
-                "severity": response_data.get("emergency_severity", "medium"),
-                "message": prompt
-            }
+            # Update session state for normal conversation
+            st.session_state.chat_history.append({
+                "role": "user",
+                "content": display_message,
+                "timestamp": now_central()
+            })
+            st.session_state.chat_history.append({
+                "role":
+                "assistant",
+                "content":
+                response_data["response"],
+                "timestamp":
+                now_central(),
+                "quick_actions":
+                response_data.get("quick_actions", [])
+            })
+
+            # Check for emergency
+            if response_data.get("is_emergency") and not st.session_state.get(
+                    "emergency_handled"):
+                st.session_state.emergency_data = {
+                    "concerns": response_data.get("emergency_concerns", []),
+                    "severity": response_data.get("emergency_severity", "medium"),
+                    "message": prompt
+                }
 
         # Clear the input field after sending
         st.session_state[f'clear_input_{user_id}'] = True
