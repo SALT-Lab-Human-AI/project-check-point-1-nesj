@@ -1,7 +1,7 @@
 from sqlmodel import Session, select
 from datetime import datetime, timedelta
 from utils.timezone_utils import now_central, start_of_day_central
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 import json
 import logging
 from app.database.models import (
@@ -243,6 +243,42 @@ class MedicationLogCRUD:
                 MedicationLog.taken_time >= today_start
             ).order_by(MedicationLog.taken_time.desc())
             return session.exec(query).all()
+    
+    @staticmethod
+    def get_user_logs(user_id: int, limit: int = 20) -> List[Dict[str, Any]]:
+        """Get recent medication logs for a user (all medications) as dictionaries"""
+        with get_session() as session:
+            # Join with Medication table to get medication details
+            query = select(MedicationLog).where(
+                MedicationLog.user_id == user_id,
+                MedicationLog.status == "taken"
+            ).order_by(MedicationLog.taken_time.desc()).limit(limit)
+            
+            logs = list(session.exec(query).all())
+            
+            # Convert to dictionaries with medication details
+            result = []
+            for log in logs:
+                medication = session.get(Medication, log.medication_id) if log.medication_id else None
+                
+                # Ensure taken_time is timezone-aware
+                taken_at = log.taken_time
+                if taken_at and taken_at.tzinfo is None:
+                    # If naive, assume it's UTC and convert to Central
+                    from utils.timezone_utils import to_central
+                    taken_at = to_central(taken_at)
+                
+                result.append({
+                    'id': log.id,
+                    'medication_id': log.medication_id,
+                    'medication_name': medication.name if medication else 'Unknown',
+                    'taken_at': taken_at,
+                    'scheduled_time': log.scheduled_time,
+                    'notes': log.notes,
+                    'status': log.status
+                })
+            
+            return result
 
 class CaregiverAlertCRUD:
     @staticmethod
