@@ -1,6 +1,10 @@
 # 🧠 Carely — AI Companion for Elderly Care
  
-![Carely Logo](docs/carely_logo.png)
+<p align="center">
+  <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/e0f9324b4595c8e0fcc0ebb17bc47ad0a5d5745a/Logo.png" alt="Carely Logo" width="300"/>
+</p>
+
+
  
 > **Carely** is an empathetic, AI-powered companion designed to assist elderly individuals with **daily health routines, medication reminders, emotional support, and caregiver coordination.**  
 > Built with privacy, simplicity, and reliability at its core — Carely combines **LLM-based dialogue, structured scheduling, and memory-aware personalization** into one seamless experience.
