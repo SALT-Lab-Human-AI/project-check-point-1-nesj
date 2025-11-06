@@ -4,7 +4,8 @@
   <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/e0f9324b4595c8e0fcc0ebb17bc47ad0a5d5745a/Logo.png" alt="Carely Logo" width="300"/>
 </p>
 
-
+> **Carely** Checkpoint 3 Presentation Link.**  
+> https://docs.google.com/presentation/d/1-aGBmOg8J21Wf3Y0pVplcKh5X-DEL2-f/edit?usp=sharing&ouid=115944354260219608829&rtpof=true&sd=true
  
 > **Carely** is an empathetic, AI-powered companion designed to assist elderly individuals with **daily health routines, medication reminders, emotional support, and caregiver coordination.**  
 > Built with privacy, simplicity, and reliability at its core — Carely combines **LLM-based dialogue, structured scheduling, and memory-aware personalization** into one seamless experience.
