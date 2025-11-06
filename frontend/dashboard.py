@@ -22,236 +22,423 @@ from utils.timezone_utils import format_central_time, to_central, now_central
 
 
 def apply_elderly_friendly_styling():
-    """Apply elderly-friendly CSS styling with larger fonts and high contrast colors"""
+    """Apply elderly-friendly CSS styling with soft pastel colors and smooth transitions"""
     st.markdown("""
         <style>
-        /* Import a clear, readable font */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        /* Import Poppins and Inter fonts for better readability */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
         
-        /* Force light theme */
+        /* Bright soft pastel gradient background */
         .stApp {
-            background-color: #FFFFFF !important;
+            background: linear-gradient(135deg, 
+                #FFF5F7 0%,    /* Very light pink */
+                #FFF9F5 25%,   /* Very light peach */
+                #FFFEF5 50%,   /* Very light cream */
+                #F5FFFA 75%,   /* Mint cream */
+                #F8F5FF 100%   /* Very light lavender */
+            ) !important;
+            background-attachment: fixed !important;
         }
         
-        /* Global font settings - larger and clearer */
+        /* Global font settings - Inter for body */
         html, body, [class*="css"] {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             font-size: 18px !important;
-            line-height: 1.6 !important;
-            background-color: #FFFFFF !important;
+            line-height: 1.7 !important;
+            color: #4A5568 !important;
         }
         
-        /* Main content area - light background */
+        /* Main content area */
         .main {
-            background-color: #FFFFFF !important;
+            background: transparent !important;
             padding: 2rem;
         }
         
         .block-container {
-            background-color: #FFFFFF !important;
-            padding-top: 3rem;
+            background: transparent !important;
+            padding-top: 2.5rem;
+            max-width: 1400px !important;
         }
         
-        /* Headings - larger and bolder */
+        /* Headings - Poppins font with bright pastel colors */
         h1 {
+            font-family: 'Poppins', sans-serif !important;
             font-size: 2.8rem !important;
-            font-weight: 700 !important;
-            color: #FF8C69 !important;
-            margin-bottom: 0.5rem !important;
+            font-weight: 600 !important;
+            color: #E08E7B !important; /* Bright coral pink */
+            margin-bottom: 0.8rem !important;
             margin-top: 0 !important;
+            letter-spacing: -0.5px !important;
         }
         
         h2 {
+            font-family: 'Poppins', sans-serif !important;
             font-size: 2rem !important;
             font-weight: 600 !important;
-            color: #2C3E50 !important;
-            margin-top: 1.5rem !important;
+            color: #D4A5A5 !important; /* Bright dusty rose */
+            margin-top: 1.8rem !important;
+            margin-bottom: 1rem !important;
         }
         
         h3 {
+            font-family: 'Poppins', sans-serif !important;
             font-size: 1.5rem !important;
-            font-weight: 600 !important;
-            color: #5A6C7D !important;
-            margin-top: 0.5rem !important;
+            font-weight: 500 !important;
+            color: #9DB4CE !important; /* Bright periwinkle blue */
+            margin-top: 0.8rem !important;
+            margin-bottom: 0.6rem !important;
         }
         
         /* Paragraphs and text */
         p, .stMarkdown {
             font-size: 1.1rem !important;
-            color: #2C3E50 !important;
+            color: #4A5568 !important;
+            line-height: 1.8 !important;
         }
         
-        /* Sidebar styling - clean white */
+        /* Sidebar styling - bright gradient */
         [data-testid="stSidebar"] {
-            background-color: #F8F9FA !important;
-            border-right: 3px solid #E8EAED;
+            background: linear-gradient(180deg, 
+                #FFF0F5 0%,    /* Lavender blush */
+                #FFF9F0 50%,   /* Light peach */
+                #F0F8FF 100%   /* Alice blue */
+            ) !important;
+            border-right: 2px solid rgba(224, 142, 123, 0.15) !important;
             padding-top: 2rem;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.02) !important;
         }
         
         [data-testid="stSidebar"] h1, 
         [data-testid="stSidebar"] h2,
         [data-testid="stSidebar"] h3 {
-            color: #2C3E50 !important;
+            font-family: 'Poppins', sans-serif !important;
+            color: #9DB4CE !important;
             font-size: 1.3rem !important;
         }
         
-        /* Buttons - larger and more accessible */
+        /* Buttons - bright pastel gradients with smooth transitions */
         .stButton button {
-            font-size: 1.2rem !important;
-            padding: 0.75rem 1.5rem !important;
-            border-radius: 12px !important;
-            font-weight: 600 !important;
-            background: linear-gradient(135deg, #FF8C69 0%, #FF6B47 100%) !important;
+            font-family: 'Poppins', sans-serif !important;
+            font-size: 0.95rem !important;
+            padding: 0.6rem 0.4rem !important;
+            border-radius: 16px !important;
+            font-weight: 500 !important;
+            background: linear-gradient(135deg, #F5CAC3 0%, #E08E7B 100%) !important; /* Bright coral gradient */
             color: white !important;
             border: none !important;
-            transition: all 0.3s ease !important;
-            box-shadow: 0 2px 4px rgba(255, 140, 105, 0.2);
-            min-height: 70px !important;
-            height: 70px !important;
-            white-space: normal !important;
-            line-height: 1.4 !important;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            box-shadow: 0 4px 12px rgba(224, 142, 123, 0.3) !important;
+            min-height: 65px !important;
+            height: auto !important;
+            white-space: pre-line !important;
+            line-height: 1.3 !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
+            backdrop-filter: blur(10px) !important;
+            text-align: center !important;
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+        }
+        
+        /* Center all button text content */
+        .stButton button p,
+        .stButton button div {
+            text-align: center !important;
+            justify-content: center !important;
+            margin: 0 auto !important;
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+            font-size: 0.95rem !important;
+        }
+        
+        /* Fix Streamlit's default button left alignment */
+        .stButton > button > div[data-testid="stMarkdownContainer"] > p {
+            text-align: center !important;
+            word-wrap: break-word !important;
+            font-size: 0.95rem !important;
+        }
+        
+        /* Ensure button content wrapper is centered */
+        .stButton > button[data-testid="baseButton-secondary"] {
+            text-align: center !important;
+        }
+        
+        .stButton > button[data-testid="baseButton-secondary"] > div {
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            width: 100% !important;
         }
         
         .stButton button:hover {
-            background: linear-gradient(135deg, #FF6B47 0%, #FF4D29 100%) !important;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(255, 140, 105, 0.3);
+            background: linear-gradient(135deg, #FFB6A3 0%, #FF9980 100%) !important; /* Brighter on hover */
+            transform: translateY(-3px) scale(1.02) !important;
+            box-shadow: 0 8px 20px rgba(255, 153, 128, 0.4) !important;
+        }
+        
+        .stButton button:active {
+            transform: translateY(-1px) scale(0.98) !important;
         }
         
         /* Primary buttons (send button) */
         .stButton button[kind="primary"],
         .stButton button[data-testid="baseButton-primary"] {
-            background: linear-gradient(135deg, #FF8C69 0%, #FF6B47 100%) !important;
+            background: linear-gradient(135deg, #B4D7E0 0%, #9DB4CE 100%) !important; /* Bright sky blue */
             color: white !important;
-            min-height: 50px !important;
-            height: 50px !important;
-            font-size: 1.5rem !important;
-            padding: 0 !important;
+            min-height: 52px !important;
+            height: 52px !important;
+            font-size: 1.4rem !important;
+            padding: 0 1.5rem !important;
+            box-shadow: 0 4px 14px rgba(157, 180, 206, 0.35) !important;
         }
         
         .stButton button[kind="primary"]:hover {
-            background: linear-gradient(135deg, #FF6B47 0%, #FF4D29 100%) !important;
+            background: linear-gradient(135deg, #9DC8E0 0%, #7FA7CC 100%) !important;
+            box-shadow: 0 6px 18px rgba(127, 167, 204, 0.45) !important;
         }
         
-        /* Text inputs - larger and clearer */
+        /* Text inputs - bright and clean */
         .stTextInput input {
             font-size: 1.2rem !important;
-            padding: 0.875rem 1rem !important;
-            border-radius: 10px !important;
-            border: 2px solid #E0E0E0 !important;
-            background-color: #FFFFFF !important;
-            color: #2C3E50 !important;
-            caret-color: #FF8C69 !important;
-            height: 50px !important;
-            line-height: 1.5 !important;
+            padding: 0.95rem 1.2rem !important;
+            border-radius: 14px !important;
+            border: 2px solid rgba(224, 142, 123, 0.3) !important;
+            background-color: rgba(255, 255, 255, 0.98) !important;
+            color: #4A5568 !important;
+            caret-color: #E08E7B !important;
+            height: 52px !important;
+            line-height: 1.6 !important;
+            transition: all 0.3s ease !important;
+            backdrop-filter: blur(10px) !important;
+        }
+        
+        .stTextInput input::placeholder {
+            color: #B8B8D0 !important;
+            opacity: 0.7 !important;
         }
         
         .stTextInput input:focus {
-            border-color: #FF8C69 !important;
-            box-shadow: 0 0 0 3px rgba(255, 140, 105, 0.1) !important;
-            caret-color: #FF8C69 !important;
-        }
-        
-        /* Select boxes - larger */
-        .stSelectbox select {
-            font-size: 1.2rem !important;
-            padding: 0.75rem !important;
-            border-radius: 10px !important;
+            border-color: #E08E7B !important;
+            box-shadow: 0 0 0 4px rgba(224, 142, 123, 0.2) !important;
             background-color: #FFFFFF !important;
-            color: #2C3E50 !important;
+            transform: translateY(-1px) !important;
         }
         
-        /* Radio buttons - larger and more spaced */
-        .stRadio label {
-            font-size: 1.2rem !important;
-            padding: 0.75rem !important;
-            margin-bottom: 0.5rem !important;
-            color: #2C3E50 !important;
+        /* Select boxes - bright styling */
+        .stSelectbox select {
+            font-size: 1.15rem !important;
+            padding: 0.85rem 1rem !important;
+            border-radius: 12px !important;
+            background-color: rgba(255, 255, 255, 0.98) !important;
+            color: #4A5568 !important;
+            border: 2px solid rgba(224, 142, 123, 0.25) !important;
+            transition: all 0.3s ease !important;
         }
         
-        /* Chat messages - larger and clearer */
-        .stChatMessage {
-            font-size: 1.2rem !important;
-            padding: 1.5rem !important;
-            margin-bottom: 1rem !important;
-            border-radius: 15px !important;
-            background-color: #F8F9FA !important;
+        .stSelectbox select:focus {
+            border-color: #E08E7B !important;
+            box-shadow: 0 0 0 3px rgba(224, 142, 123, 0.15) !important;
         }
         
-        /* Mic button styling - match send button */
-        button[kind="secondary"],
-        .stButton button[kind="secondary"] {
-            background: linear-gradient(135deg, #FF8C69 0%, #FF6B47 100%) !important;
+        /* Tabs - bright pastel design */
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 12px;
+            background-color: rgba(255, 255, 255, 0.6) !important;
+            padding: 8px;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .stTabs [data-baseweb="tab"] {
+            font-family: 'Poppins', sans-serif !important;
+            font-size: 1.1rem !important;
+            font-weight: 500 !important;
+            color: #9DB4CE !important;
+            background-color: transparent !important;
+            border-radius: 12px !important;
+            padding: 12px 24px !important;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        
+        .stTabs [data-baseweb="tab"]:hover {
+            background-color: rgba(245, 202, 195, 0.3) !important;
+            color: #E08E7B !important;
+            transform: translateY(-2px) !important;
+        }
+        
+        .stTabs [data-baseweb="tab"][aria-selected="true"] {
+            background: linear-gradient(135deg, #F5CAC3 0%, #E08E7B 100%) !important;
             color: white !important;
-            border: none !important;
-            font-size: 1.5rem !important;
-            min-height: 50px !important;
-            height: 50px !important;
+            box-shadow: 0 4px 12px rgba(224, 142, 123, 0.35) !important;
+        }
+        
+        /* Radio buttons - elegant spacing */
+        .stRadio label {
+            font-size: 1.15rem !important;
+            padding: 0.85rem 1rem !important;
+            margin-bottom: 0.6rem !important;
+            color: #4A5568 !important;
             border-radius: 10px !important;
             transition: all 0.3s ease !important;
-            padding: 0 !important;
+        }
+        
+        .stRadio label:hover {
+            background-color: rgba(180, 121, 100, 0.08) !important;
+        }
+        
+        /* Chat messages - soft and modern */
+        .stChatMessage {
+            font-size: 1.15rem !important;
+            padding: 1.6rem !important;
+            margin-bottom: 1.2rem !important;
+            border-radius: 18px !important;
+            background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,245,242,0.95) 100%) !important;
+            backdrop-filter: blur(10px) !important;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06) !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .stChatMessage:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08) !important;
+        }
+        
+        /* Mic button styling */
+        button[kind="secondary"],
+        .stButton button[kind="secondary"] {
+            background: linear-gradient(135deg, #FFB6A3 0%, #FF9980 100%) !important; /* Bright coral */
+            color: white !important;
+            border: none !important;
+            font-size: 1.4rem !important;
+            min-height: 52px !important;
+            height: 52px !important;
+            border-radius: 14px !important;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            padding: 0 1.2rem !important;
+            box-shadow: 0 4px 14px rgba(255, 153, 128, 0.35) !important;
         }
         
         button[kind="secondary"]:hover,
         .stButton button[kind="secondary"]:hover {
-            background: linear-gradient(135deg, #FF6B47 0%, #FF4D29 100%) !important;
-            transform: translateY(-2px);
+            background: linear-gradient(135deg, #FF9980 0%, #FF7F66 100%) !important;
+            transform: translateY(-3px) scale(1.03) !important;
+            box-shadow: 0 6px 18px rgba(255, 127, 102, 0.45) !important;
         }
         
-
-        
-        /* Metrics - larger numbers */
+        /* Metrics - bright display */
         [data-testid="stMetricValue"] {
-            font-size: 2rem !important;
-            font-weight: 700 !important;
-            color: #2C3E50 !important;
+            font-size: 2.2rem !important;
+            font-weight: 600 !important;
+            color: #E08E7B !important;
+            font-family: 'Poppins', sans-serif !important;
         }
         
         [data-testid="stMetricLabel"] {
-            font-size: 1.1rem !important;
-            color: #5A6C7D !important;
+            font-size: 1.05rem !important;
+            color: #9DB4CE !important;
+            font-weight: 500 !important;
         }
         
-        /* Cards and containers */
+        /* Cards and containers with smooth transitions */
         .element-container {
             margin-bottom: 1.5rem;
+            transition: all 0.3s ease !important;
         }
         
-        /* Dividers */
+        /* Dividers - subtle and elegant */
         hr {
-            margin: 2rem 0 !important;
+            margin: 2.5rem 0 !important;
             border: none !important;
-            border-top: 2px solid #E8EAED !important;
+            height: 2px !important;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(180, 121, 100, 0.3) 50%, 
+                transparent 100%
+            ) !important;
         }
         
-        /* Success/Info/Warning boxes - high contrast */
-        .stSuccess, .stInfo, .stWarning, .stError {
+        /* Alert boxes - bright pastel colors */
+        .stSuccess {
+            background: linear-gradient(135deg, #C7EDE0 0%, #B0E0D0 100%) !important; /* Bright mint */
+            color: #2D6E5E !important;
+            border-left: 4px solid #5FCCA8 !important;
             font-size: 1.1rem !important;
-            padding: 1rem 1.5rem !important;
-            border-radius: 10px !important;
+            padding: 1.2rem 1.6rem !important;
+            border-radius: 14px !important;
+            box-shadow: 0 4px 12px rgba(95, 204, 168, 0.25) !important;
+        }
+        
+        .stInfo {
+            background: linear-gradient(135deg, #D4E8F5 0%, #B4D7E0 100%) !important; /* Bright sky blue */
+            color: #FFFFFF !important;
+            border-left: 4px solid #9DB4CE !important;
+            font-size: 1.1rem !important;
+            padding: 1.2rem 1.6rem !important;
+            border-radius: 14px !important;
+            box-shadow: 0 4px 12px rgba(157, 180, 206, 0.3) !important;
+        }
+        
+        .stWarning {
+            background: linear-gradient(135deg, #FFE8D6 0%, #FFD9B8 100%) !important; /* Bright peach */
+            color: #A0662F !important;
+            border-left: 4px solid #FFB380 !important;
+            font-size: 1.1rem !important;
+            padding: 1.2rem 1.6rem !important;
+            border-radius: 14px !important;
+            box-shadow: 0 4px 12px rgba(255, 179, 128, 0.25) !important;
+        }
+        
+        .stError {
+            background: linear-gradient(135deg, #FFD6D6 0%, #FFB8B8 100%) !important; /* Bright pink-red */
+            color: #C04040 !important;
+            border-left: 4px solid #FF8080 !important;
+            font-size: 1.1rem !important;
+            padding: 1.2rem 1.6rem !important;
+            border-radius: 14px !important;
+            box-shadow: 0 4px 12px rgba(255, 128, 128, 0.25) !important;
         }
         
         /* Remove dark theme artifacts */
         .stApp [data-testid="stHeader"] {
-            background-color: #FFFFFF !important;
+            background-color: transparent !important;
         }
         
-        /* High contrast color palette */
+        /* Sentiment colors - bright palette */
         .positive-sentiment {
-            color: #27AE60 !important;
+            color: #5FCCA8 !important; /* Bright mint green */
             font-weight: 600;
         }
         
         .negative-sentiment {
-            color: #E74C3C !important;
+            color: #FF9980 !important; /* Bright coral */
             font-weight: 600;
         }
         
         .neutral-sentiment {
-            color: #95A5A6 !important;
+            color: #9DB4CE !important; /* Bright periwinkle */
+            font-weight: 500;
+        }
+        
+        /* Smooth scrollbar - bright colors */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #F5CAC3 0%, #E08E7B 100%);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #FFB6A3 0%, #FF9980 100%);
         }
         </style>
     """, unsafe_allow_html=True)
@@ -474,7 +661,7 @@ def run_dashboard():
         page = st.radio("",
                        [
                            "🏠 Overview", "💬 Chat with Carely", "💊 Medications",
-                           "📊 Health Insights", "🚨 Alerts & Reminders"
+                           "📊 Health Insights"  # , "🚨 Alerts & Reminders"  # Commented out for now
                        ],
                        label_visibility="collapsed")
 
@@ -487,8 +674,100 @@ def run_dashboard():
         show_medication_management(selected_user_id)
     elif page == "📊 Health Insights":
         show_health_insights(selected_user_id)
-    elif page == "🚨 Alerts & Reminders":
-        show_alerts_and_reminders(selected_user_id)
+    # elif page == "🚨 Alerts & Reminders":  # Commented out for now
+    #     show_alerts_and_reminders(selected_user_id)
+
+
+def get_daily_affirmation() -> str:
+    """
+    Generate ONE positive affirmation for the day using AI.
+    Same affirmation is shown for the entire day (cached by date).
+    
+    Returns:
+        Short positive affirmation (under 20 words)
+    """
+    # Get current date to use as cache key
+    current_date = now_central().strftime('%Y-%m-%d')
+    
+    # Check if we already have today's affirmation in session state
+    if 'daily_affirmation' not in st.session_state:
+        st.session_state.daily_affirmation = {}
+    
+    # If we have today's affirmation, return it
+    if current_date in st.session_state.daily_affirmation:
+        return st.session_state.daily_affirmation[current_date]
+    
+    # Fallback affirmations in case AI fails
+    fallback_affirmations = [
+        "Today is a fresh start. You are doing wonderfully.",
+        "Your presence brings joy to those around you.",
+        "Each small step you take matters. You're doing great.",
+        "You are valued, loved, and appreciated every day.",
+        "Your wisdom and kindness make a real difference.",
+        "Today brings new moments to cherish and enjoy.",
+        "You've overcome so much. Keep being amazing.",
+        "Your smile lights up the room. Share it today.",
+        "Every day with you is a blessing to others.",
+        "You are stronger and braver than you know."
+    ]
+    
+    try:
+        # Use Groq to generate a personalized affirmation
+        from groq import Groq
+        groq_api_key = os.getenv("GROQ_API_KEY")
+        
+        if not groq_api_key:
+            # No API key, use fallback
+            import random
+            affirmation = random.choice(fallback_affirmations)
+        else:
+            client = Groq(api_key=groq_api_key)
+            
+            response = client.chat.completions.create(
+                model="llama-3.1-8b-instant",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a caring companion for seniors. Generate ONE short, positive affirmation."
+                    },
+                    {
+                        "role": "user",
+                        "content": """Generate ONE positive affirmation for today.
+                        
+Guidelines:
+- Keep it under 20 words
+- Use simple, gentle language
+- Avoid clichés or overly spiritual tones
+- Make it caring and encouraging
+- Suitable for seniors
+- Don't use quotes or special formatting
+
+Just give me the affirmation, nothing else."""
+                    }
+                ],
+                temperature=0.8,
+                max_tokens=50
+            )
+            
+            affirmation = response.choices[0].message.content.strip()
+            
+            # Remove quotes if AI added them
+            affirmation = affirmation.strip('"').strip("'")
+            
+            # Validate length (should be under 20 words)
+            if len(affirmation.split()) > 20:
+                import random
+                affirmation = random.choice(fallback_affirmations)
+    
+    except Exception as e:
+        # If anything fails, use fallback
+        import random
+        affirmation = random.choice(fallback_affirmations)
+    
+    # Cache today's affirmation
+    st.session_state.daily_affirmation[current_date] = affirmation
+    
+    return affirmation
 
 
 def get_upcoming_events_for_overview(user_id: int) -> List[Dict[str, Any]]:
@@ -601,73 +880,243 @@ def show_overview(user_id: int):
     # Page header without logo - very tight spacing with increased negative margin
     st.markdown(f"""
         <div style='padding: 0; margin: -5rem 0 0 0; margin-bottom: 0;'>
-            <h1 style='margin: 0; padding: 0; color: #FF8C69; font-size: 2rem;'>Carely: Your AI Companion</h1>
-            <p style='margin: 0.2rem 0 0 0; font-size: 1.1rem; color: #5A6C7D; font-style: italic;'>Your caring companion, always here for you</p>
-            <p style='margin: 0.3rem 0 0 0; font-size: 0.95rem; color: #95A5A6;'>📅 {current_day}, {current_date} • 🕐 {current_time_str}</p>
-            <h2 style='margin: 0.5rem 0 0.2rem 0; color: #333; font-size: 1.5rem;'>👋 Hello, {user.name}!</h2>
-            <p style='margin: 0; font-size: 1rem; color: #666; font-weight: 500;'>Here's your summary for today</p>
+            <h1 style='margin: 0; padding: 0; color: #E08E7B; font-size: 2rem;'>Carely: Your AI Companion</h1>
+            <p style='margin: 0.2rem 0 0 0; font-size: 1.1rem; color: #9DB4CE; font-style: italic;'>Your caring companion, always here for you</p>
+            <p style='margin: 0.3rem 0 0 0; font-size: 0.95rem; color: #D4A5A5;'>📅 {current_day}, {current_date} • 🕐 {current_time_str}</p>
+            <h2 style='margin: 0.5rem 0 0.2rem 0; color: #4A5568; font-size: 1.5rem;'>👋 Hello, {user.name}!</h2>
+            <p style='margin: 0; font-size: 1rem; color: #9DB4CE; font-weight: 500;'>Here's your summary for today</p>
         </div>
     """, unsafe_allow_html=True)
 
     st.markdown("<div style='margin: 0.5rem 0;'></div>", unsafe_allow_html=True)
+    
+    # Remove default Streamlit padding from columns and fix alignment
+    st.markdown("""
+        <style>
+        /* Remove all padding from columns */
+        div[data-testid="column"] {
+            padding: 0 !important;
+        }
+        
+        div[data-testid="column"] > div {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        
+        div[data-testid="stVerticalBlock"] > div {
+            gap: 0 !important;
+        }
+        
+        /* Remove padding from markdown containers inside columns */
+        div[data-testid="column"] .element-container {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        
+        div[data-testid="column"] .stMarkdown {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
 
     # Today's summary cards with better styling
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
+        # Medication adherence today - Count all scheduled doses for the day
+        from datetime import datetime as dt, time as dt_time
+        
+        # Get current time in Central Time
+        current_time = now_central()
+        current_time_only = current_time.time()
+        
+        # Get all medications FOR THIS USER ONLY
+        medications = MedicationCRUD.get_user_medications(user_id)
+        
+        total_doses_scheduled = 0  # Total doses scheduled for entire day
+        doses_taken = 0
+        
+        for med in medications:
+            if not med.active or not med.schedule_times:
+                continue
+            
+            try:
+                schedule_times = json.loads(med.schedule_times) if isinstance(med.schedule_times, str) else med.schedule_times
+                
+                for scheduled_time_str in schedule_times:
+                    # Parse the scheduled time
+                    scheduled_time = dt.strptime(scheduled_time_str, "%H:%M").time()
+                    
+                    # Count ALL scheduled doses for the day (not just ones that are due)
+                    total_doses_scheduled += 1
+                    
+                    # Check if this dose was logged as taken today
+                    scheduled_datetime = dt.combine(current_time.date(), scheduled_time)
+                    scheduled_datetime_central = to_central(scheduled_datetime)
+                    
+                    # Get TODAY's medication logs for this user and medication
+                    today_logs = MedicationLogCRUD.get_today_medication_logs(
+                        user_id=user_id,
+                        medication_id=med.id
+                    )
+                    
+                    # Check if any log matches this scheduled dose
+                    # For medications taken once daily, any log today counts
+                    # For multiple doses per day, match within 4 hours window
+                    for log in today_logs:
+                        if log.status != "taken":
+                            continue
+                        
+                        # Use taken_time for comparison (when it was actually logged)
+                        log_time = to_central(log.taken_time) if log.taken_time else to_central(log.scheduled_time)
+                        
+                        # Check if log matches this scheduled time
+                        log_minutes = log_time.hour * 60 + log_time.minute
+                        scheduled_minutes = scheduled_time.hour * 60 + scheduled_time.minute
+                        
+                        # If medication is once daily, accept any time today
+                        # If multiple times daily, check within 4 hours (240 minutes)
+                        if len(schedule_times) == 1:
+                            # Single dose per day - any log today counts
+                            doses_taken += 1
+                            break
+                        else:
+                            # Multiple doses per day - match within 4 hours window
+                            if abs(log_minutes - scheduled_minutes) <= 240:
+                                doses_taken += 1
+                                break
+            except Exception as e:
+                continue
+        
+        # Calculate adherence rate based on total scheduled doses
+        adherence_rate = (doses_taken / total_doses_scheduled * 100) if total_doses_scheduled > 0 else 0
+        
+        # Bright pastel colors
+        color = "#5FCCA8" if adherence_rate >= 80 else "#FFB6A3" if adherence_rate >= 50 else "#FFD6A0"
         st.markdown("""
-            <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                        padding: 1.5rem; border-radius: 15px; color: white;'>
-                <h3 style='color: white; margin: 0;'>👤 Profile</h3>
-                <h2 style='color: white; margin-top: 0.5rem;'>{}</h2>
+            <div style='background: {}; 
+                        padding: 0; 
+                        margin: 0;
+                        border-radius: 15px; 
+                        color: white; 
+                        height: 200px;
+                        display: flex !important; 
+                        flex-direction: column !important; 
+                        justify-content: center !important; 
+                        align-items: center !important; 
+                        text-align: center !important;
+                        box-sizing: border-box !important;'>
+                <div style='display: flex; flex-direction: column; align-items: center; justify-content: center;'>
+                    <h3 style='color: #8B4513 !important; margin: 0 0 0.8rem 0; padding: 0; font-size: 1.2rem; font-weight: 600; line-height: 1.2;'>💊 Medications</h3>
+                    <h2 style='color: #5A2E0E !important; margin: 0 0 0.6rem 0; padding: 0; font-size: 3.5rem; line-height: 1; font-weight: 700;'>{}%</h2>
+                    <p style='color: #8B4513 !important; margin: 0; padding: 0; font-size: 0.95rem; line-height: 1.2;'>{}/{} doses taken</p>
+                </div>
             </div>
-        """.format(user.name), unsafe_allow_html=True)
+        """.format(color, int(adherence_rate), doses_taken, total_doses_scheduled), unsafe_allow_html=True)
 
     with col2:
-        # Medication adherence today
-        adherence = MedicationLogCRUD.get_medication_adherence(user_id, days=1)
-        adherence_rate = adherence.get("adherence_rate", 0)
-        color = "#27AE60" if adherence_rate >= 80 else "#E67E22" if adherence_rate >= 50 else "#E74C3C"
-        st.markdown("""
-            <div style='background: {}; padding: 1.5rem; border-radius: 15px; color: white;'>
-                <h3 style='color: white; margin: 0;'>💊 Medications</h3>
-                <h2 style='color: white; margin-top: 0.5rem;'>{}%</h2>
-                <p style='color: white; margin: 0; opacity: 0.9;'>{}/{} doses taken</p>
-            </div>
-        """.format(color, int(adherence_rate), adherence.get('taken', 0), adherence.get('total', 0)), unsafe_allow_html=True)
-
-    with col3:
         # Recent mood
         conversations = ConversationCRUD.get_recent_sentiment_data(user_id, days=1)
         if conversations:
-            avg_mood = sum(c.sentiment_score
-                           for c in conversations if c.sentiment_score) / len(
-                               [c for c in conversations if c.sentiment_score])
-            mood_emoji = get_sentiment_emoji(avg_mood)
-            mood_color = "#27AE60" if avg_mood > 0.3 else "#E67E22" if avg_mood > -0.3 else "#E74C3C"
-            st.markdown("""
-                <div style='background: {}; padding: 1.5rem; border-radius: 15px; color: white;'>
-                    <h3 style='color: white; margin: 0;'>😊 Mood</h3>
-                    <h2 style='color: white; margin-top: 0.5rem;'>{} {:.2f}</h2>
-                </div>
-            """.format(mood_color, mood_emoji, avg_mood), unsafe_allow_html=True)
+            # Filter conversations with valid sentiment scores
+            valid_sentiments = [c.sentiment_score for c in conversations if c.sentiment_score is not None]
+            
+            if valid_sentiments:  # Only calculate if there are valid scores
+                avg_mood = sum(valid_sentiments) / len(valid_sentiments)
+                mood_emoji = get_sentiment_emoji(avg_mood)
+                # Bright pastel mood colors
+                mood_color = "#B4D7E0" if avg_mood > 0.3 else "#FFD9B8" if avg_mood > -0.3 else "#FFB8B8"
+                st.markdown("""
+                    <div style='background: {}; 
+                                padding: 0; 
+                                margin: 0;
+                                border-radius: 15px; 
+                                color: white; 
+                                height: 200px;
+                                display: flex !important; 
+                                flex-direction: column !important; 
+                                justify-content: center !important; 
+                                align-items: center !important; 
+                                text-align: center !important;
+                                box-sizing: border-box !important;'>
+                        <div style='display: flex; flex-direction: column; align-items: center; justify-content: center;'>
+                            <h3 style='color: #2C6B7D !important; margin: 0 0 0.8rem 0; padding: 0; font-size: 1.2rem; font-weight: 600; line-height: 1.2;'>&#128154; Mood</h3>
+                            <h2 style='color: #1A4A58 !important; margin: 0 0 0.6rem 0; padding: 0; font-size: 3.5rem; line-height: 1; font-weight: 700;'>{} {:.2f}</h2>
+                            <p style='color: #2C6B7D !important; margin: 0; padding: 0; opacity: 0; font-size: 0.95rem; line-height: 1.2; visibility: hidden;'>placeholder</p>
+                        </div>
+                    </div>
+                """.format(mood_color, mood_emoji, avg_mood), unsafe_allow_html=True)
+            else:
+                # Conversations exist but no sentiment scores
+                st.markdown("""
+                    <div style='background: #E0D0E0; 
+                                padding: 0; 
+                                margin: 0;
+                                border-radius: 15px; 
+                                color: white; 
+                                height: 200px;
+                                display: flex !important; 
+                                flex-direction: column !important; 
+                                justify-content: center !important; 
+                                align-items: center !important; 
+                                text-align: center !important;
+                                box-sizing: border-box !important;'>
+                        <div style='display: flex; flex-direction: column; align-items: center; justify-content: center;'>
+                            <h3 style='color: #6B4C6B !important; margin: 0 0 0.8rem 0; padding: 0; font-size: 1.2rem; font-weight: 600; line-height: 1.2;'>&#128154; Mood</h3>
+                            <h2 style='color: #4A2E4A !important; margin: 0 0 0.6rem 0; padding: 0; font-size: 3.5rem; line-height: 1; font-weight: 700;'>No data</h2>
+                            <p style='color: #6B4C6B !important; margin: 0; padding: 0; opacity: 0; font-size: 0.95rem; line-height: 1.2; visibility: hidden;'>placeholder</p>
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
         else:
             st.markdown("""
-                <div style='background: #95A5A6; padding: 1.5rem; border-radius: 15px; color: white;'>
-                    <h3 style='color: white; margin: 0;'>😊 Mood</h3>
-                    <h2 style='color: white; margin-top: 0.5rem;'>No data</h2>
+                <div style='background: #E0D0E0; 
+                            padding: 0; 
+                            margin: 0;
+                            border-radius: 15px; 
+                            color: white; 
+                            height: 200px;
+                            display: flex !important; 
+                            flex-direction: column !important; 
+                            justify-content: center !important; 
+                            align-items: center !important; 
+                            text-align: center !important;
+                            box-sizing: border-box !important;'>
+                    <div style='display: flex; flex-direction: column; align-items: center; justify-content: center;'>
+                        <h3 style='color: #6B4C6B !important; margin: 0 0 0.8rem 0; padding: 0; font-size: 1.2rem; font-weight: 600; line-height: 1.2;'>&#128154; Mood</h3>
+                        <h2 style='color: #4A2E4A !important; margin: 0 0 0.6rem 0; padding: 0; font-size: 3.5rem; line-height: 1; font-weight: 700;'>No data</h2>
+                        <p style='color: #6B4C6B !important; margin: 0; padding: 0; opacity: 0; font-size: 0.95rem; line-height: 1.2; visibility: hidden;'>placeholder</p>
+                    </div>
                 </div>
             """, unsafe_allow_html=True)
 
-    with col4:
-        # Unresolved alerts
-        alerts = CaregiverAlertCRUD.get_unresolved_alerts(user_id)
-        alert_count = len(alerts)
-        st.metric("🚨 Active Alerts", alert_count)
+    with col3:
+        # Daily Thought/Affirmation
+        daily_thought = get_daily_affirmation()
+        st.markdown(f"""
+            <div style='background: linear-gradient(135deg, #E8D5F2 0%, #D5C4E8 100%); 
+                        padding: 0; 
+                        margin: 0;
+                        border-radius: 15px; 
+                        color: white; 
+                        height: 200px;
+                        display: flex !important; 
+                        flex-direction: column !important; 
+                        justify-content: center !important; 
+                        align-items: center !important; 
+                        text-align: center !important;
+                        box-sizing: border-box !important;'>
+                <div style='display: flex; flex-direction: column; align-items: center; justify-content: center;'>
+                    <h3 style='color: #7B5B8B !important; margin: 0 0 0.8rem 0; padding: 0; font-size: 1.2rem; font-weight: 600; line-height: 1.2; white-space: nowrap;'>✨ Today's Thought</h3>
+                    <p style='color: #5A3C6A !important; margin: 0; padding: 0 1rem; font-size: 1rem; line-height: 1.4; font-style: italic; font-weight: 500;'>"{daily_thought}"</p>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
 
     # Upcoming Important Events Panel - minimal top spacing
     st.markdown("<div style='margin: 0.8rem 0 0.3rem 0;'></div>", unsafe_allow_html=True)
-    st.markdown("<h3 style='margin: 0; color: #333;'>🎯 Next 10 Upcoming Events</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='margin: 0; color: #333;'>🎯 Next Upcoming Events</h3>", unsafe_allow_html=True)
     st.markdown("<div style='margin: 0.3rem 0;'></div>", unsafe_allow_html=True)
     
     # Get upcoming events using helper function
@@ -1011,6 +1460,29 @@ def show_memory_game():
 def show_chat_interface(user_id: int):
     """Show chat interface with Carely"""
     user = UserCRUD.get_user(user_id)
+    
+    # Add CSS to reduce spacing and fix button alignment
+    st.markdown("""
+        <style>
+        /* Reduce top spacing on chat page */
+        .main .block-container {
+            padding-top: 1rem !important;
+        }
+        
+        /* Fix quick action buttons - prevent text wrapping */
+        .stButton button {
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+        }
+        
+        /* Reduce spacing between elements */
+        .element-container {
+            margin-bottom: 0.5rem !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    
     st.header(f"💬 Chat with Carely - {user.name}")
 
     # Display emergency safety sheet if emergency detected
@@ -1261,8 +1733,8 @@ def show_chat_interface(user_id: int):
             st.rerun()
 
     # Integrated input bar with voice and text
-    st.markdown("---")
-    st.markdown("##### Type or speak your message:")
+    st.markdown("<hr style='margin: 0.5rem 0;'>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 1.1rem; font-weight: 600; margin: 0.3rem 0;'>Type or speak your message:</p>", unsafe_allow_html=True)
 
     # Add CSS to align all input elements properly
     st.markdown("""
@@ -1278,10 +1750,13 @@ def show_chat_interface(user_id: int):
             margin-bottom: 0 !important;
         }
         
-        /* Match mic button iframe height to other buttons */
+        /* Style mic button iframe to blend with UI */
         iframe[title="streamlit_mic_recorder.speech_to_text"] {
             height: 50px !important;
             margin-bottom: 0 !important;
+            border-radius: 10px !important;
+            overflow: hidden !important;
+            border: none !important;
         }
         
         /* Ensure send button aligns */
@@ -1325,34 +1800,33 @@ def show_chat_interface(user_id: int):
                                     key=f'voice_input_{user_id}')
     
     # Persistent Quick Actions - Below chat input for easy access
-    st.markdown("")  # Add small spacing
-    st.markdown("**Quick Actions:**")
+    st.markdown("<p style='font-weight: 600; margin: 0.5rem 0 0.3rem 0;'>Quick Actions:</p>", unsafe_allow_html=True)
     
-    # Use equal columns with spacing
-    action_col1, action_col2, action_col3, action_col4, action_col5 = st.columns(5, gap="medium")
+    # Use equal columns with proper button sizing
+    action_col1, action_col2, action_col3, action_col4, action_col5 = st.columns(5, gap="small")
     
     with action_col1:
-        if st.button("🕐 Log Medication", key="persistent_log_med", use_container_width=True):
+        if st.button("🕐 Log\nMedication", key="persistent_log_med", use_container_width=True):
             st.session_state.pending_action = "log_medication"
             st.rerun()
     
     with action_col2:
-        if st.button("🎵 Play Music", key="persistent_play_music", use_container_width=True):
+        if st.button("🎵 Play\nMusic", key="persistent_play_music", use_container_width=True):
             st.session_state.pending_action = "play_music"
             st.rerun()
     
     with action_col3:
-        if st.button("🧩 Fun Corner", key="persistent_fun_corner", use_container_width=True):
+        if st.button("🧩 Fun\nCorner", key="persistent_fun_corner", use_container_width=True):
             st.session_state.pending_action = "fun_corner"
             st.rerun()
     
     with action_col4:
-        if st.button("🧠 Memory Cue", key="persistent_memory_cue", use_container_width=True):
+        if st.button("🧠 Memory\nCue", key="persistent_memory_cue", use_container_width=True):
             st.session_state.pending_action = "memory_cue"
             st.rerun()
     
     with action_col5:
-        if st.button("🎮 Memory Game", key="persistent_memory_game", use_container_width=True):
+        if st.button("🎮 Memory\nGame", key="persistent_memory_game", use_container_width=True):
             st.session_state.show_memory_game = True
             st.rerun()
 
@@ -1464,6 +1938,38 @@ def show_medication_management(user_id: int):
 
     if medications:
         st.subheader("Current Medications")
+        
+        # Add CSS for clickable medication items
+        st.markdown("""
+            <style>
+            /* Style medication expanders to look more clickable */
+            div[data-testid="stExpander"] {
+                border: 2px solid #e0e0e0;
+                border-radius: 10px;
+                margin-bottom: 10px;
+                background-color: white;
+                transition: all 0.3s ease;
+            }
+            
+            div[data-testid="stExpander"]:hover {
+                border-color: #3498db;
+                box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2);
+                transform: translateY(-2px);
+            }
+            
+            /* Style the expander summary (header) */
+            div[data-testid="stExpander"] summary {
+                cursor: pointer;
+                padding: 12px;
+                font-weight: 600;
+                color: #2c3e50;
+            }
+            
+            div[data-testid="stExpander"] summary:hover {
+                color: #3498db;
+            }
+            </style>
+        """, unsafe_allow_html=True)
 
         for med in medications:
             with st.expander(f"{med.name} - {med.dosage}"):
@@ -1646,11 +2152,15 @@ def show_health_insights(user_id: int):
 
     with col1:
         if conversations:
-            avg_mood = sum(c.sentiment_score
-                           for c in conversations if c.sentiment_score) / len(
-                               [c for c in conversations if c.sentiment_score])
-            mood_emoji = get_sentiment_emoji(avg_mood)
-            st.metric("Average Mood", f"{mood_emoji} {avg_mood:.2f}")
+            # Filter conversations with valid sentiment scores (same as Overview page)
+            valid_sentiments = [c.sentiment_score for c in conversations if c.sentiment_score is not None]
+            
+            if valid_sentiments:
+                avg_mood = sum(valid_sentiments) / len(valid_sentiments)
+                mood_emoji = get_sentiment_emoji(avg_mood)
+                st.metric("Average Mood", f"{mood_emoji} {avg_mood:.2f}")
+            else:
+                st.metric("Average Mood", "No data")
         else:
             st.metric("Average Mood", "No data")
 
