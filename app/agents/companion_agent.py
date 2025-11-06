@@ -286,15 +286,19 @@ or {{"verbosity":"LONG"}}"""
     def _detect_user_intent(self, user_input: str) -> Dict[str, Any]:
         """Use AI to detect what user wants to do"""
         
-        prompt = f"""Analyze this user message and determine their intent:
+        prompt = f"""Analyze this user message and determine their intent with high accuracy:
 Message: "{user_input}"
 
 Possible intents:
-- log_medication: User is saying they took/will take medication
+- log_medication: User is CONFIRMING they took/have taken their medication (e.g., "I took my pill", "Just had my medication", "I already logged it")
+- ask_medication: User is ASKING about medication, not confirming they took it (e.g., "Did I take my pill?", "What's my medication?", "Should I take it?")
 - ask_schedule: User asking about their schedule or appointments
 - emergency: User needs urgent help or expressing pain/distress
 - mood_check: User expressing emotions or feelings
 - general_chat: Normal conversation
+
+IMPORTANT: Only classify as "log_medication" if the user is CLEARLY STATING they took the medication, not asking questions about it.
+Questions like "Did I take..." or "Should I take..." are "ask_medication", NOT "log_medication".
 
 Return JSON only:
 {{
@@ -307,7 +311,7 @@ Return JSON only:
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
-                    {"role": "system", "content": "You are an intent classifier. Respond only with valid JSON."},
+                    {"role": "system", "content": "You are an expert intent classifier. You must distinguish between statements (user took medication) and questions (user asking about medication). Respond only with valid JSON."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.1,
@@ -318,16 +322,8 @@ Return JSON only:
             return json.loads(content)
             
         except Exception as e:
-            # Fallback to keyword detection
-            user_lower = user_input.lower()
-            if any(word in user_lower for word in ["took", "taken", "take", "pill", "medication", "medicine"]):
-                return {"type": "log_medication", "confidence": 0.8, "reasoning": "keyword match"}
-            elif any(word in user_lower for word in ["schedule", "appointment", "calendar", "event"]):
-                return {"type": "ask_schedule", "confidence": 0.8, "reasoning": "keyword match"}
-            elif any(word in user_lower for word in ["help", "pain", "hurt", "emergency", "chest", "breathing"]):
-                return {"type": "emergency", "confidence": 0.8, "reasoning": "keyword match"}
-            else:
-                return {"type": "general_chat", "confidence": 0.7, "reasoning": "default"}
+            # If AI fails, default to general chat - don't auto-log anything
+            return {"type": "general_chat", "confidence": 0.5, "reasoning": "AI classification failed, defaulting to safe option"}
 
     def _extract_medication_details(self, user_id: int, user_input: str) -> Dict[str, Any]:
         """Extract which medication and any notes from natural language"""
@@ -560,19 +556,22 @@ Generate greeting:"""
     def handle_play_music(self) -> Dict[str, Any]:
         """Return a relaxing music recommendation"""
         music_options = [
-            {"title": "Peaceful Piano Music", "url": "https://www.youtube.com/watch?v=7emS3ye3cIY"},
-            {"title": "Calming Nature Sounds", "url": "https://www.youtube.com/watch?v=eKFTSSKCzWA"},
-            {"title": "Gentle Classical Music", "url": "https://www.youtube.com/watch?v=jgpJVI3tDbY"},
-            {"title": "Relaxing Guitar Music", "url": "https://www.youtube.com/watch?v=4bMr6vKXnkw"},
+            {"title": "Music", "url": "https://www.youtube.com/watch?v=D1lH55N72U0&list=RDD1lH55N72U0&start_radio=1"},
+            {"title": "Music", "url": "https://www.youtube.com/watch?v=6FOUqQt3Kg0"},
+            {"title": "Music", "url": "https://www.youtube.com/watch?v=8jCFzreP1ng&list=RD8jCFzreP1ng&start_radio=1"},
+            {"title": "Music", "url": "https://www.youtube.com/watch?v=9Qp_SrTgBBs&list=RD9Qp_SrTgBBs&start_radio=1"},
+            {"title": "Music", "url": "https://www.youtube.com/watch?v=Ms4KTpdx1wY&list=RDMs4KTpdx1wY&start_radio=1"},
+            {"title": "Music", "url": "https://www.youtube.com/watch?v=nsCwpwGi9uE&list=RDnsCwpwGi9uE&start_radio=1"},
+            {"title": "Music", "url": "https://www.youtube.com/watch?v=uA4mfu_5TyI&list=RDuA4mfu_5TyI&start_radio=1"},
         ]
         
         import random
         selected = random.choice(music_options)
         
         return {
-            "message": f"Here's something relaxing 🎵\n\n🎶 {selected['title']}\n{selected['url']}",
+            "message": f"Here's your favorite music 🎵\n\n{selected['url']}",
             "music_url": selected['url'],
-            "music_title": selected['title']
+            "music_title": "Music"
         }
     
     def handle_fun_corner(self, corner_type: str = "joke") -> str:
@@ -874,15 +873,99 @@ Generate greeting:"""
                     "is_emergency": False
                 }
             
-            # THIRD: AI-Driven Medication Logging Detection
-            # Detect if user is trying to log medication through natural conversation
+            # AI-Driven Intent Detection (do once for all medication handling)
             intent = self._detect_user_intent(user_message)
             
-            if intent["type"] == "log_medication" and intent["confidence"] > 0.7:
+            # THIRD: AI-Driven Medication Information Queries
+            # Handle questions about medications (not logging) with AI + log data
+            if intent["type"] == "ask_medication" and intent["confidence"] > 0.6:
+                # Get user's medications and today's logs
+                medications = MedicationCRUD.get_user_medications(user_id, active_only=True)
+                all_logs = MedicationLogCRUD.get_user_logs(user_id, limit=20)
+                
+                # Filter today's logs (handle timezone-aware/naive comparison)
+                today_start = now_central().replace(hour=0, minute=0, second=0, microsecond=0)
+                today_logs = []
+                for log in all_logs:
+                    if log['taken_at']:
+                        # Convert to timezone-aware if needed
+                        taken_at = to_central(log['taken_at']) if log['taken_at'].tzinfo is None else log['taken_at']
+                        if taken_at >= today_start:
+                            today_logs.append(log)
+                
+                # Build context for AI
+                med_list = "\n".join([f"- {med.name} (Schedule: {med.schedule_times})" for med in medications]) if medications else "No medications prescribed"
+                
+                if today_logs:
+                    log_list = "\n".join([
+                        f"- {log['medication_name']} at {to_central(log['taken_at']).strftime('%I:%M %p')}" 
+                        for log in today_logs
+                    ])
+                    log_context = f"Medications taken today:\n{log_list}"
+                else:
+                    log_context = "No medications logged today yet."
+                
+                # Let AI generate personalized response with context
+                ai_prompt = f"""The user asked: "{user_message}"
+
+User's prescribed medications:
+{med_list}
+
+{log_context}
+
+Provide a helpful, conversational response that:
+1. Answers their question accurately based on the data above
+2. Is warm and supportive
+3. Keeps it brief (2-3 sentences max)
+4. If they're asking if they took something, check the logs and tell them
+5. If they're asking how many medications, count from the prescribed list"""
+
+                try:
+                    response = self.client.chat.completions.create(
+                        model=self.model,
+                        messages=[
+                            {"role": "system", "content": "You are a helpful medical companion. Answer questions about medications based on the provided data."},
+                            {"role": "user", "content": ai_prompt}
+                        ],
+                        temperature=0.3,
+                        max_tokens=200
+                    )
+                    response_text = response.choices[0].message.content.strip()
+                except Exception as e:
+                    # Fallback response
+                    med_count = len(medications)
+                    if med_count > 0:
+                        response_text = f"You have {med_count} medications prescribed: {', '.join([m.name for m in medications])}."
+                    else:
+                        response_text = "You don't have any medications prescribed in the system yet."
+                
+                # Save conversation
+                ConversationCRUD.save_conversation(
+                    user_id=user_id,
+                    message=user_message,
+                    response=response_text,
+                    conversation_type="medication_inquiry"
+                )
+                
+                return {
+                    "response": response_text,
+                    "sentiment_score": 0.5,
+                    "sentiment_label": "helpful",
+                    "alert_sent": False,
+                    "quick_actions": [],
+                    "is_emergency": False
+                }
+            
+            # FOURTH: AI-Driven Medication Logging Detection
+            # Let AI intelligently detect if user is confirming they took medication
+            
+            # Only proceed if AI is confident this is medication logging (not asking)
+            if intent["type"] == "log_medication" and intent["confidence"] > 0.75:
                 # Extract medication details using AI
                 med_details = self._extract_medication_details(user_id, user_message)
                 
-                if med_details["medication_id"] and med_details["confidence"] > 0.6:
+                # Require high confidence to auto-log
+                if med_details["medication_id"] and med_details["confidence"] > 0.7:
                     # Automatically log the medication
                     log_result = self.log_medication_tool(
                         user_id=user_id,
@@ -1253,6 +1336,10 @@ Respond naturally and warmly based on ALL the context provided."""
         except Exception as e:
             # Check if it's a rate limit error
             error_str = str(e)
+            print(f"ERROR in generate_response: {error_str}")  # Debug logging
+            import traceback
+            traceback.print_exc()  # Print full traceback
+            
             if "429" in error_str or "rate" in error_str.lower():
                 error_response = "I'm getting a lot of requests right now and need a moment to catch my breath! Please wait just a minute and try again. I'm still here for you!"
             else:
