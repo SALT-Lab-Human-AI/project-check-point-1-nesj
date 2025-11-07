@@ -61,6 +61,7 @@
 
 2. Health Information
    - Medical conditions
+   - Insurance Policy number
    - Treatment details
    - Medication specifics
    - Test results
