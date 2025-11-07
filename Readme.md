@@ -16,7 +16,7 @@
 ## 🌟 Project Overview
  
 
-It integrates an **AI companion** that interacts naturally with older adults while offering a **portal system** to monitor health trends and receive alerts.
+It integrates an **AI companion** that interacts naturally with older adults while offering a **portal system** to monitor health trends and notify caregivers via alerts in case of emergency detection.
  
 ### **Core Objectives**
 - Deliver **empathetic and safe** conversational support for seniors  
