@@ -174,7 +174,7 @@ This path covers the non-verbal, button-based interactions from the main chat UI
 * **Expected Bot Behavior:** The bot immediately provides a message containing a link to a pre-selected, relaxing YouTube music video.
 * **Minimal Test (e2e):**
     * `When` the user clicks the "Play Music" button.
-    * `Then` the bot's response must contain a message like "Here's your favorite music" and a valid `youtube.com` URL.
+    * `Then` the bot's response must contain a message like "Here's your favorite music" and a valid `youtube.com` URL that could be played without leaving the chat interface.
 
 ### Use Case: Fun Corner Button
 
@@ -200,3 +200,4 @@ This path covers the non-verbal, button-based interactions from the main chat UI
     * `When` the user clicks the "Memory Game" button.
 
     * `Then` the `st.session_state.show_memory_game` must be set to `True` and the chat container must be replaced by the game board UI.
+
