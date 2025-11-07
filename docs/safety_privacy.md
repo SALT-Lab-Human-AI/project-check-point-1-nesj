@@ -91,8 +91,7 @@ async def rate_limiting_middleware(request: Request, call_next):
    Severity Classification
    ↓
    Caregiver Alert System
-     → SMS/Email notification
-     → Optional Telegram alert
+     → Telegram alert
    ↓
    Database Alert Log
    ```
@@ -162,8 +161,6 @@ The system:
 ### Caregiver Visibility
 1. **Alert Access**
    - Emergency notifications
-   - Medication adherence reports
-   - Mood and wellness trends
    - Conversation summaries (PII redacted)
 
 2. **Privacy Controls**
