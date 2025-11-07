@@ -198,4 +198,5 @@ This path covers the non-verbal, button-based interactions from the main chat UI
 * **Expected Bot Behavior:** This is a UI-only action. The chat interface is hidden and the Streamlit "Memory Card Game" UI is displayed.
 * **Minimal Test (e2e):**
     * `When` the user clicks the "Memory Game" button.
+
     * `Then` the `st.session_state.show_memory_game` must be set to `True` and the chat container must be replaced by the game board UI.
