@@ -192,4 +192,45 @@ This revealed major empathy and safety gaps in existing tools (Gemini, ChatGPT, 
 7. Daily summaries auto-generated for episodic continuity.
  
 ---
- 
+
+## ✅ Checkpoint 4 Summary (Evaluation & Findings)
+
+- Conducted a structured user evaluation with **6 pilot users** and **2 caregivers**, testing mood check-ins, memory recall, medication logging, emotional-support chats, quick actions, and emergency alerts.
+
+- **Usability Metrics:** Achieved a strong **UMUX-Lite score of 82/100**, with average ratings around **4.0/5** for helpfulness, trust, usefulness, and safety during emergency prompts.
+
+- **What Worked Well:**  
+  - Users consistently appreciated Carely’s **empathetic, non-robotic tone**.  
+  - Logging health data through chat felt **effortless** compared to forms.  
+  - Memory of recent details made the assistant feel more human and reduced repetitive interactions.  
+  - Natural language understanding often exceeded expectations, handling everyday conversations smoothly.
+
+- **Pain Points Identified:**  
+  - **Inconsistent long-term recall** in extended conversations.  
+  - **Visual and UI clarity issues** such as message alignment, small fonts, and insufficient contrast.  
+  - Emergency alert flow slower and more rigid than other tasks.  
+  - Occasional hallucinations during confusing inputs.
+
+- **Key Improvements After Study:**  
+  - Updated UI for clarity (alignment fixes, larger fonts, cleaner contrast).  
+  - Refined quick-action layout to avoid clutter.  
+  - Improved memory stability logic and added stricter safety checks.
+
+- **Validated User Needs:**  
+  - Seniors want **more personalization**, including tailored prompts and preferences.  
+  - Need for **bigger fonts and cleaner visual layout** to reduce confusion.  
+  - Desire for **stronger long-term memory** to maintain trust over repeated use.  
+  - High importance placed on **timely proactive reminders** for medication and daily routines.  
+  - **Voice-first interaction** (STT/TTS) significantly boosts accessibility for low-tech users. 
+- **Risks & Limitations:**  
+  - Small, demographically narrow pilot group; results may not generalize.  
+  - Model unpredictability (hallucinations, inconsistent temporal reasoning).  
+  - Ethical balance between **helpfulness vs. user over-dependence**.
+
+- **Future Enhancements:**  
+  - Chat-based schedule editing.  
+  - Multilingual support.  
+  - Better temporal memory indexing.  
+  - HIPAA-ready data handling.  
+  - Integration with senior homes and wearable devices.
+
