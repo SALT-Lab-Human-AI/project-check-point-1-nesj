@@ -237,3 +237,25 @@ This revealed major empathy and safety gaps in existing tools (Gemini, ChatGPT, 
   - HIPAA-ready data handling.  
   - Integration with senior homes and wearable devices.
 
+
+## 🤖 AI Disclosure
+
+This project leveraged multiple AI-powered tools to enhance development efficiency, user experience, and code quality. Below is a transparent list of AI systems utilized during the development of Carely:
+
+- **Cursor AI** (2024). AI-assisted code editor used for rapid prototyping, debugging, and generating implementation suggestions.  
+  🔗 https://www.cursor.com
+
+- **Replit AI** (2024). AI agent support for UI improvements, bug fixes, and assistance in streamlining the Streamlit front-end development.  
+  🔗 https://replit.com
+
+- **Microsoft Copilot Studio** (2024). Used for prompt optimization and design of conversational behavior in chatbot flows and safety guardrails.  
+  🔗 https://www.microsoft.com/en-us/microsoft-copilot-studio
+
+- **Antigravity** (2024). Assisted with content enhancement, code refactoring recommendations, and workflow automation throughout the project lifecycle.  
+  🔗 https://antigravity.ai/
+
+---
+
+**Note:** All AI-generated outputs were reviewed, revised, and validated by the project team to ensure correctness, safety, and alignment with responsible development practices.
+
+
