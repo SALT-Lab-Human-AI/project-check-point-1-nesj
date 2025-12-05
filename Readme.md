@@ -96,7 +96,7 @@ Episodic summaries allow day-to-day continuity similar to human memory.
 | **Model** | **Groq API — Llama-3.3-70b-versatile** |
 | **Integration** | `CompanionAgent` orchestrates all AI calls |
 | **Prompting Strategy** | Elderly-friendly tone, empathetic phrasing, ≤4 sentences (≤230 tokens) per response |
-| **Fine-Tuning** | None (prompt engineering only) |
+| **Fine-Tuning** | Iterative System Prompt Refinement; Guardrail Layers on Top of the LLM; Memory-Aware Context Construction; LLM-as-a-Judge Feedback Loop |
 | **Why Llama-3.3?** | Open-weights, low latency, cost-free for prototyping |
 | **Why Groq?** | Hardware-accelerated inference delivering real-time responses |
  
