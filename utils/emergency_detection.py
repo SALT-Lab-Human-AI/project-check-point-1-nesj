@@ -13,8 +13,8 @@ load_dotenv()
 class EmergencyDetector:
     EMERGENCY_KEYWORDS = [
         "chest pain", "breathing trouble", "shortness of breath", 
-        "can't breathe", "cannot breathe", "difficulty breathing",
-        "severe headache", "fainting", "unconscious", "heart attack",
+        "can't breathe", "cannot breathe", "difficulty breathing", "inflammed",
+        "severe headache", "fainting", "unconscious", "heart attack", "pain in the left hand", "allergies",
         "stroke", "bleeding a lot", "suicidal", "pressure"
     ]
     
