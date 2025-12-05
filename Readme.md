@@ -249,10 +249,10 @@ This project leveraged multiple AI-powered tools to enhance development efficien
   🔗 https://replit.com
 
 - **Microsoft Copilot Studio** (2024). Used for prompt optimization and design of conversational behavior in chatbot flows and safety guardrails.  
-  🔗 https://www.microsoft.com/en-us/microsoft-copilot-studio
+  🔗 https://www.microsoft.com/en-us/microsoft-365-copilot/microsoft-copilot-studio
 
 - **Antigravity** (2024). Assisted with content enhancement, code refactoring recommendations, and workflow automation throughout the project lifecycle.  
-  🔗 https://antigravity.ai/
+  🔗 https://antigravity.google/
 
 ---
 
