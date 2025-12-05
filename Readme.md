@@ -214,7 +214,7 @@ This revealed major empathy and safety gaps in existing tools (Gemini, ChatGPT, 
 - **Key Improvements After Study:**  
   - Updated UI for clarity (alignment fixes, larger fonts, cleaner contrast).  
   - Refined quick-action layout to avoid clutter.  
-  - Improved memory stability logic and added stricter safety checks.
+  - Improved memory stability logic and added stricter safety checks (PII redaction and no storage of sensitive information).
 
 - **Validated User Needs:**  
   - Seniors want **more personalization**, including tailored prompts and preferences.  
