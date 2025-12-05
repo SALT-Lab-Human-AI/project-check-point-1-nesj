@@ -58,15 +58,15 @@ Carely’s architecture and feature set reflect these insights directly. By inte
 
 ### Method
 **System Description:**
-The development of Carely follows a modular, end-to-end architecture designed to support elderly users through natural dialogue, personalized context recall, mood tracking, proactive medication reminders and safety monitoring. The system is composed of four primary layers: the Streamlit-based frontend, FastAPI backend, LLM-driven agentic core, and a multi-tier memory subsystem. Each component is engineered to balance usability, technical robustness, and privacy, ensuring that interactions feel human-centered while remaining computationally efficient and predictable.
+The development of Carely follows a modular, end-to-end architecture designed to support elderly users through natural dialogue, personalized context recall, mood tracking, proactive medication reminders and safety monitoring. The system is composed of four primary layers: the Streamlit-based frontend, FastAPI backend, LLM-driven agentic core, and a multi-tier memory subsystem (Figure 1). Each component is engineered to balance usability, technical robustness, and privacy, ensuring that interactions feel human-centered while remaining computationally efficient and predictable.
 
 **Frontend Layer:**
 The user interface is implemented in Streamlit, chosen for its rapid prototyping capabilities and compatibility with senior-friendly design principles. It provides text input, voice input through integrated speech-to-text, and the ability to play back AI responses using a clearly visible speaker button. These features address accessibility needs by reducing reliance on typing and improving clarity for users with hearing or visual limitations. 
 
-The dashboard aggregates real-time insights using Plotly visualizations, presenting medication adherence, mood trends, and conversation history in formats that are easy for seniors and caregivers to interpret.
+The dashboard aggregates real-time insights using Plotly visualizations, presenting medication adherence, mood trends, and conversation history (Figure 2,3,5) in formats that are easy for seniors and caregivers to interpret.
 
 The UI also includes:
-* Quick Action buttons for common tasks such as logging medication, playing music, initiating a memory cue, or accessing a fun corner and built-in cognitive game.
+* Quick Action buttons for common tasks such as logging medication, playing music, initiating a memory cue, or accessing a fun corner and built-in cognitive game. (Figure 4)
 * Emergency safety sheets, which are displayed when the system detects concerning phrases or emotional distress.
 * A memory game, designed to promote cognitive engagement through a card-matching challenge with adjustable difficulty and visually recognizable emojis.
 
@@ -86,9 +86,9 @@ Data persistence is handled locally using SQLite, which supports fast queries wh
 The CompanionAgent serves as the cognitive engine of the system. It coordinates between deterministic rule-based components and generative reasoning modules to ensure that interactions remain safe, empathetic, and contextually grounded. Key functionalities include:
 
 * Intent recognition, routing questions to appropriate handlers such as medication lookup, event retrieval, or conversational engagement.
-* Sentiment classification, which identifies user mood and influences tone adjustments and proactive check-ins.
-* Emergency triage leverages a structured keyword–pattern detection system that identifies high-risk statements, assigns an appropriate severity level, and initiates the emergency workflow. When a critical threshold is reached, Carely automatically passes the alert to the backend’s notification service, which delivers a real-time Telegram message to the user’s designated caregiver.
-* PII redaction, applied deterministically before prompting the model, reducing the risk of sensitive information leakage.
+* Sentiment classification, which identifies user mood and influences tone adjustments and proactive check-ins. (Figure 3,6)
+* Emergency triage leverages a structured keyword–pattern detection system that identifies high-risk statements, assigns an appropriate severity level, and initiates the emergency workflow. When a critical threshold is reached, Carely automatically passes the alert to the backend’s notification service, which delivers a real-time Telegram message to the user’s designated caregiver. (Figure 11)
+* PII redaction, applied deterministically before prompting the model, reducing the risk of sensitive information leakage. (Figure 7)
 * Prompt construction, where relevant memory layers - short-term context, semantic recall, episodic summaries, and structured data are combined into a coherent input block.
 * Response generation, executed through an LLM configured on the Groq platform for low-latency inference.
 
@@ -97,8 +97,8 @@ Wherever possible, Carely avoids over-reliance on generative reasoning for safet
 **Memory Subsystem:**
 Carely’s memory architecture is central to its ability to deliver personalized, consistent dialogue. It is composed of four layers:
 
-* **Short-Term Memory (STM):** Stored in the database, STM retrieves the last several conversational exchanges and formats them into a compact representation. This ensures the LLM receives immediate context without redundant or excessive tokens.
-* **Long-Term Semantic Memory (LTM):** Powered by ChromaDB, LTM stores conversational embeddings, profile facts, and episodic summaries. Retrieval incorporates recency weighting, deduplication, and hygiene mechanisms to remove outdated or low-value entries. The agent uses this layer to recall relevant past experiences, routines, or personal details.
+* **Short-Term Memory (STM):** Stored in the database, STM retrieves the last several conversational exchanges and formats them into a compact representation. This ensures the LLM receives immediate context without redundant or excessive tokens. (Figure 9)
+* **Long-Term Semantic Memory (LTM):** Powered by ChromaDB, LTM stores conversational embeddings, profile facts, and episodic summaries. Retrieval incorporates recency weighting, deduplication, and hygiene mechanisms to remove outdated or low-value entries. The agent uses this layer to recall relevant past experiences, routines, or personal details. (Figure 8)
 * **Episodic Memory:** This layer generates daily extractive summaries, capturing the number of conversations, key topics, average sentiment, and medication mentions. These summaries form higher-level temporal context, enabling the agent to recognize changes across days.
 * **Structured Memory:** Structured memory provides guaranteed-accurate retrieval of factual data such as medication schedules, personal events, meal times, and logged behaviors. Unlike semantic memory, it is deterministic and supports interactions requiring precision.
 
@@ -186,6 +186,57 @@ Future improvements will focus on expanding user control and strengthening relia
 [8] Xu, Y., & Zhang, W. (2025). ChatWise: AI-powered engaging conversations for enhancing senior cognitive wellbeing. arXiv. https://arxiv.org/abs/2503.05740
 
 ### Appendix
+## Figure 1
 <p align="center">
   <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/ce52d81318ec9dd408ee1e5ed2de5140016747ee/docs/architecture.png"/>
+</p>
+
+## Figure 2
+<p align="center">
+  <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/566cc953cc98c8f9f077cfc38ee158b7227c6572/docs/Appendix_2.png"/>
+</p>
+
+## Figure 3
+<p align="center">
+  <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/566cc953cc98c8f9f077cfc38ee158b7227c6572/docs/Appendix_3.png"/>
+</p>
+
+## Figure 4
+<p align="center">
+  <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/566cc953cc98c8f9f077cfc38ee158b7227c6572/docs/Appendix_4.png"/>
+</p>
+
+## Figure 5
+<p align="center">
+  <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/566cc953cc98c8f9f077cfc38ee158b7227c6572/docs/Appendix_5.png"/>
+</p>
+
+## Figure 6
+<p align="center">
+  <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/566cc953cc98c8f9f077cfc38ee158b7227c6572/docs/Appendix_1.png"/>
+</p>
+
+## Figure 7
+<p align="center">
+  <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/566cc953cc98c8f9f077cfc38ee158b7227c6572/docs/Appendix_7.png"/>
+</p>
+
+## Figure 8
+<p align="center">
+  <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/566cc953cc98c8f9f077cfc38ee158b7227c6572/docs/Appendix_8.png"/>
+</p>
+
+## Figure 9
+<p align="center">
+  <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/566cc953cc98c8f9f077cfc38ee158b7227c6572/docs/Appendix_9.png"/>
+</p>
+
+## Figure 10
+<p align="center">
+  <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/ce52d81318ec9dd408ee1e5ed2de5140016747ee/docs/architecture.png"/>
+</p>
+
+## Figure 11
+<p align="center">
+  <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/566cc953cc98c8f9f077cfc38ee158b7227c6572/docs/Appendix_6.png"/>
 </p>
