@@ -4,7 +4,7 @@
   <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/e0f9324b4595c8e0fcc0ebb17bc47ad0a5d5745a/Logo.png" alt="Carely Logo" width="300"/>
 </p>
 
-> [CarelyAI Checkpoint 3 Presentation Link](https://docs.google.com/presentation/d/1-aGBmOg8J21Wf3Y0pVplcKh5X-DEL2-f/edit?usp=sharing&ouid=115944354260219608829&rtpof=true&sd=true)
+> [CarelyAI Checkpoint 4 Presentation Link](https://docs.google.com/presentation/d/1X4oD7xJF3b4pqJkYbaCJkRoW8yDsamfF/edit?usp=sharing&ouid=111228501674454550833&rtpof=true&sd=true)
 >
 > [CarelyAI App Link](https://carely.streamlit.app/)
  
