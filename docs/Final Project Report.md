@@ -87,7 +87,7 @@ The CompanionAgent serves as the cognitive engine of the system. It coordinates 
 
 * Intent recognition, routing questions to appropriate handlers such as medication lookup, event retrieval, or conversational engagement.
 * Sentiment classification, which identifies user mood and influences tone adjustments and proactive check-ins. (Figure 3,6)
-* Emergency triage leverages a structured keyword–pattern detection system that identifies high-risk statements, assigns an appropriate severity level, and initiates the emergency workflow. When a critical threshold is reached, Carely automatically passes the alert to the backend’s notification service, which delivers a real-time Telegram message to the user’s designated caregiver. (Figure 11)
+* Emergency triage leverages a structured keyword–pattern detection system that identifies high-risk statements, assigns an appropriate severity level, and initiates the emergency workflow. When a critical threshold is reached, Carely automatically passes the alert to the backend’s notification service, which delivers a real-time Telegram message to the user’s designated caregiver. (Figure 10)
 * PII redaction, applied deterministically before prompting the model, reducing the risk of sensitive information leakage. (Figure 7)
 * Prompt construction, where relevant memory layers - short-term context, semantic recall, episodic summaries, and structured data are combined into a coherent input block.
 * Response generation, executed through an LLM configured on the Groq platform for low-latency inference.
@@ -232,11 +232,6 @@ Future improvements will focus on expanding user control and strengthening relia
 </p>
 
 ## Figure 10
-<p align="center">
-  <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/ce52d81318ec9dd408ee1e5ed2de5140016747ee/docs/architecture.png"/>
-</p>
-
-## Figure 11
 <p align="center">
   <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/566cc953cc98c8f9f077cfc38ee158b7227c6572/docs/Appendix_6.png"/>
 </p>
