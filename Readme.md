@@ -3,6 +3,7 @@
 <p align="center">
   <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/e0f9324b4595c8e0fcc0ebb17bc47ad0a5d5745a/Logo.png" alt="Carely Logo" width="300"/>
 </p>
+**By: Nivedita Bharti, Jasmitha Duvvuru, Emmima Gnanaraj, Srivalli Lanka**
 
 > [CarelyAI Checkpoint 4 Presentation Link](https://docs.google.com/presentation/d/1X4oD7xJF3b4pqJkYbaCJkRoW8yDsamfF/edit?usp=sharing&ouid=111228501674454550833&rtpof=true&sd=true)
 >
