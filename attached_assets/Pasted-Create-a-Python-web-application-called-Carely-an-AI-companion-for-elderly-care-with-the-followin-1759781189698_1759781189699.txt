@@ -1,0 +1,83 @@
+Create a Python web application called "Carely" - an AI companion for elderly care with the following features:
+
+TECH STACK:
+- Backend: FastAPI or Flask
+- Frontend: Streamlit or simple HTML/CSS/JS
+- Database: SQLite with SQLModel
+- AI: LangChain with Ollama integration (or OpenAI if Ollama not available)
+- Additional: APScheduler for reminders
+
+CORE FEATURES TO IMPLEMENT:
+
+1. MEMORY RETENTION & CONTEXT:
+   - Store conversation history in database
+   - Remember medication schedules, family details, preferences
+   - Recall past interactions for personalized follow-ups
+
+2. PROACTIVE DAILY CHECK-INS:
+   - Scheduled morning/afternoon/evening check-ins
+   - Ask about mood, sleep quality, medication adherence
+   - Sentiment analysis on responses
+
+3. MEDICATION REMINDERS & LOGGING:
+   - Configurable medication schedule
+   - Reminder system with confirmation tracking
+   - Log missed doses and adherence patterns
+
+4. CAREGIVER DASHBOARD:
+   - View medication adherence reports
+   - See sentiment trends over time
+   - Receive alerts for concerning patterns
+
+FILE STRUCTURE:
+carely/
+├── app/
+│   ├── agents/
+│   │   └── companion_agent.py
+│   ├── database/
+│   │   ├── models.py
+│   │   └── crud.py
+│   ├── memory/
+│   │   └── conversation_store.py
+│   ├── scheduling/
+│   │   └── reminder_scheduler.py
+│   └── api/
+│       └── routes.py
+├── frontend/
+│   └── dashboard.py
+├── requirements.txt
+└── main.py
+
+SPECIFIC IMPLEMENTATION REQUESTS:
+
+1. Create SQLModel database models for:
+   - User (name, preferences, contact_info)
+   - Medication (name, dose, schedule, user_id)
+   - Conversation (message, response, sentiment, timestamp)
+   - Reminder (type, scheduled_time, status)
+
+2. Implement a LangChain agent with:
+   - Conversation memory using ConversationBufferWindowMemory
+   - Tools for: log_medication, check_schedule, alert_caregiver
+   - Custom prompt for elderly care context
+
+3. Create APScheduler jobs for:
+   - Daily check-ins at 9AM, 2PM, 7PM
+   - Medication reminders based on schedule
+   - Weekly summary reports
+
+4. Build a Streamlit dashboard showing:
+   - Today's medication adherence status
+   - Recent conversations with sentiment coloring
+   - Caregiver alert history
+   - Simple charts for mood trends
+
+5. Include sample data initialization for testing
+
+PLEASE PROVIDE:
+- Complete working code with all imports
+- requirements.txt with all dependencies
+- Instructions to run the application
+- Basic error handling and logging
+
+Focus on making the AI interactions warm, empathetic, and senior-friendly in the conversation prompts.

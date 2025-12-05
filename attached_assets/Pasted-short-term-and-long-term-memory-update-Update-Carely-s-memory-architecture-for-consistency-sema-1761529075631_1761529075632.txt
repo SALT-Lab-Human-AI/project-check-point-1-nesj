@@ -1,0 +1,44 @@
+short term and long term memory update :
+ 
+Update Carely’s memory architecture for consistency, semantic recall, and richer long-term context.
+Files to modify:
+app/memory/memory_manager.py
+app/memory/long_term_memory.py
+app/database/crud.py (hook point only)
+Add/update dependency config (requirements.txt or pyproject.toml) if new libraries are required.
+1️⃣ Short-Term Memory (persistent, DB-based)
+In MemoryManager.build_context(...), remove the in-process deque usage.
+Fetch the last 8–10 messages directly from ConversationCRUD.get_recent(user_id, limit=8) and format them as a compact dialogue string.
+Ensure this is user-scoped and persists across sessions.
+Keep total short-term context under ~500 tokens.
+2️⃣ Long-Term Memory (embedding-based, semantically rich)
+In app/memory/long_term_memory.py, replace TF-IDF and pickle logic with an embedding-based local vector store using sentence-transformers (e.g., all-MiniLM-L6-v2) and FAISS or Chroma.
+Create a lightweight schema for entries containing:
+user_id, type (e.g., “conversation”, “summary”, “profile_fact”, “event”), timestamp, source_id, and the short text chunk.
+Store artifacts in data/vectors/, namespaced per user.
+Retrieval method: retrieve_similar_conversations(query, user_id, top_k=2) should return up to 3 concise snippets total (1 from recent conversations + 2 from summaries/profile facts/events).
+Skip any snippets nearly identical to the current query.
+3️⃣ Incremental Updates
+In ConversationCRUD.create_* (or equivalent save function):
+After saving each new conversation, append its embedding to the vector store (no rebuilds).
+Add a daily scheduler (can use existing APScheduler) to:
+Generate or update episodic summaries (3–6 lines) per user and upsert them to the vector store with type "summary".
+When profile info (med times, preferences, caregivers) changes, generate one-liner profile facts and upsert them with type "profile_fact".
+4️⃣ Retrieval & Integration Rules
+At query time, build LTM context in this order:
+Conversations: top-1 relevant past exchange.
+Summaries/profile/events: top-2 total combined.
+Each snippet must be ≤2 sentences. If longer, summarize before including.
+Add these retrieved snippets to the prompt after short-term context and before structured memory data.
+5️⃣ Fallbacks & Hygiene
+Cache the embedding model to avoid reload delays.
+If embeddings or vector store are unavailable, log a warning and skip LTM gracefully.
+Never override ground-truth structured data (meds, schedules, events). LTM is for recall, not facts.
+Keep vector files under 100 MB total and organized per user.
+Acceptance Criteria
+Memory survives restarts — last 8 DB messages are always recalled.
+LTM retrieval surfaces semantically relevant past context (e.g., “BP” ≈ “blood pressure”).
+Daily summaries and key user facts are available within the same session after creation.
+Retrieval never exceeds three concise snippets (total ≤300 tokens).
+No pickle or TF-IDF files remain in the repo.
+Context feels consistent and “aware” of user history, even after restarts.
