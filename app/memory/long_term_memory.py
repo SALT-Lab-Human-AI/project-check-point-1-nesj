@@ -207,7 +207,7 @@ class LongTermMemory:
             return 0.5  # Default mid-range score if parsing fails
     
     def retrieve_similar_conversations(self, query: str, user_id: int, 
-                                      top_k: int = 7, exclude_query: str = None) -> List[Dict]:
+                                      top_k: int = 7, exclude_query: str = None) -> List[Dict]: #Changing into to 7
         """
         Retrieve semantically similar past conversations with recency re-ranking
         Returns mix of 2 summaries + 3-5 raw snippets
