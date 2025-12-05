@@ -6,7 +6,7 @@
 
 > [CarelyAI Checkpoint 4 Presentation Link](https://docs.google.com/presentation/d/1X4oD7xJF3b4pqJkYbaCJkRoW8yDsamfF/edit?usp=sharing&ouid=111228501674454550833&rtpof=true&sd=true)
 >
-> [CarelyAI App Link](https://carely.streamlit.app/)
+> [CarelyAI App Link](https://carely-final.streamlit.app/)
  
 > **Carely** is an empathetic, AI-powered companion designed to assist elderly individuals with **daily health routines, medication reminders, emotional support, and caregiver coordination.**  
 > Built with privacy, simplicity, and reliability at its core — Carely combines **LLM-based dialogue, structured scheduling, and memory-aware personalization** into one seamless experience.
