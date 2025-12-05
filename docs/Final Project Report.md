@@ -186,52 +186,52 @@ Future improvements will focus on expanding user control and strengthening relia
 [8] Xu, Y., & Zhang, W. (2025). ChatWise: AI-powered engaging conversations for enhancing senior cognitive wellbeing. arXiv. https://arxiv.org/abs/2503.05740
 
 ### Appendix
-## Figure 1
+### Figure 1
 <p align="center">
   <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/ce52d81318ec9dd408ee1e5ed2de5140016747ee/docs/architecture.png"/>
 </p>
 
-## Figure 2
+### Figure 2
 <p align="center">
   <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/566cc953cc98c8f9f077cfc38ee158b7227c6572/docs/Appendix_2.png"/>
 </p>
 
-## Figure 3
+### Figure 3
 <p align="center">
   <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/566cc953cc98c8f9f077cfc38ee158b7227c6572/docs/Appendix_3.png"/>
 </p>
 
-## Figure 4
+### Figure 4
 <p align="center">
   <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/566cc953cc98c8f9f077cfc38ee158b7227c6572/docs/Appendix_4.png"/>
 </p>
 
-## Figure 5
+### Figure 5
 <p align="center">
   <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/566cc953cc98c8f9f077cfc38ee158b7227c6572/docs/Appendix_5.png"/>
 </p>
 
-## Figure 6
+### Figure 6
 <p align="center">
   <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/566cc953cc98c8f9f077cfc38ee158b7227c6572/docs/Appendix_1.png"/>
 </p>
 
-## Figure 7
+### Figure 7
 <p align="center">
   <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/566cc953cc98c8f9f077cfc38ee158b7227c6572/docs/Appendix_7.png"/>
 </p>
 
-## Figure 8
+### Figure 8
 <p align="center">
   <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/566cc953cc98c8f9f077cfc38ee158b7227c6572/docs/Appendix_8.png"/>
 </p>
 
-## Figure 9
+### Figure 9
 <p align="center">
   <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/566cc953cc98c8f9f077cfc38ee158b7227c6572/docs/Appendix_9.png"/>
 </p>
 
-## Figure 10
+### Figure 10
 <p align="center">
   <img src="https://github.com/SALT-Lab-Human-AI/project-check-point-1-nesj/blob/566cc953cc98c8f9f077cfc38ee158b7227c6572/docs/Appendix_6.png"/>
 </p>
