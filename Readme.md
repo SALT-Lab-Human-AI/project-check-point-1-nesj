@@ -162,7 +162,6 @@ This revealed major empathy and safety gaps in existing tools (Gemini, ChatGPT, 
 | Memory | Context lost after few turns | Persistent multi-layer memory |
 | Empathy | Generic replies | Persona-based fine prompting |
 | Emergency | Weak detection | Rule-based real-time detection |
-| Caregiver Visibility | Absent | Dual-portal caregiver view |
 | Cost | Paid APIs | Free local stack (Groq + ChromaDB) |
  
 ---
@@ -233,7 +232,9 @@ This revealed major empathy and safety gaps in existing tools (Gemini, ChatGPT, 
 - **Future Enhancements:**  
   - Chat-based schedule editing.  
   - Multilingual support.  
-  - Better temporal memory indexing.  
+  - Better temporal memory indexing.
+  - To answer questions related to Multi-Variable Health Pattern Analysis, Cross-Reference Memory Synthesis, Progressive Narrative with Medical Context
+    ("Have I been forgetting my afternoon medications more on days when I mention feeling tired in the morning?")
   - HIPAA-ready data handling.  
   - Integration with senior homes and wearable devices.
 
