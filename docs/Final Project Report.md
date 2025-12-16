@@ -137,6 +137,25 @@ Participants also rated the reliability of additional features, the likelihood o
 
 Overall, the quantitative results show that Carely provides a solid user experience, with scores suggesting strong trust and steady ease of use, but also signaling the need to refine conversational consistency and streamline emergency handling.
 
+
+The following table summarizes user feedback collected through a post-task survey (*n = 4). Participants rated each item on a **5-point Likert scale*  
+(1 = Strongly Disagree, 5 = Strongly Agree).
+
+| Category | Avg Score (out of 5) | SD |
+|--------|---------------------|----|
+| Ease of Navigation | 4.25 | 0.50 |
+| Helpfulness of AI Responses | 4.50 | 0.58 |
+| Emergency Scenario Accuracy | 4.75 | 0.50 |
+| Medication Management Clarity | 5.00 | 0.00 |
+| System Easy to Use | 4.50 | 0.58 |
+| User Confidence | 4.25 | 0.96 |
+| Feature Usefulness | 4.25 | 0.96 |
+| Additional Features Working | 4.75 | 0.50 |
+| Likelihood to Use / Recommend | 5.00 | 0.00 |
+| Trustworthiness | 4.75 | 0.50 |
+| Felt Safer During Emergency Prompts | 4.25 | 0.96 |
+
+*Summary:* Results indicate high overall usability and trust in the system, with low to moderate variability across responses. Perfect agreement was observed for medication management clarity and likelihood to use or recommend the system, while slightly higher variability in user confidence and feature usefulness suggests opportunities for refinement.
 **Qualitative Insights:**
 Qualitative feedback offered additional depth by highlighting the aspects of Carely that felt intuitive and supportive, as well as the moments that introduced confusion or broken immersion.
 
